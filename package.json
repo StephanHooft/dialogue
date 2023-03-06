@@ -1,0 +1,18 @@
+{
+  "name": "com.stephanhooft.dialogue",
+  "version": "1.0.0",
+  "displayName": "Dialogue",
+  "description": "A Unity package for an ink-based dialogue framework.",
+  "unity": "2021.3",
+  "keywords": [
+    "dialogue",
+    "ink",
+    "inky"
+  ],
+  "author": {
+    "name": "Stephan Hooft",
+    "email": "stephanhooft@gmail.com",
+    "url": ""
+  },
+  "type": "library"
+}

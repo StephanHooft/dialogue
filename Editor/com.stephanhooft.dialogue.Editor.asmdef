@@ -1,0 +1,19 @@
+{
+    "name": "com.stephanhooft.dialogue.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:58bed0e7c5306824586d7eda03609289",
+        "GUID:14ed41e18d90d1d47baca3e76a1cc7bf"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
