@@ -101,6 +101,7 @@ namespace StephanHooft.Dialogue.Data
             if (Listening)
                 throw Exceptions.AlreadyListening;
             Exceptions.ThrowIfNull(story, "story");
+            VariablesToStory(story);
             story.variablesState.variableChangedEvent += VariableChanged;
             activeStory = story;
         }
