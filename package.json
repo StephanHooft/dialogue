@@ -1,6 +1,6 @@
 {
   "name": "com.stephanhooft.dialogue",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "displayName": "Dialogue",
   "description": "A Unity package for an ink-based dialogue framework.",
   "unity": "2021.3",

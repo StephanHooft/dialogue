@@ -11,7 +11,7 @@ namespace StephanHooft.Dialogue.Data
     /// <see cref="DialogueVariables"/> will do this automatically.
     /// </para>
     /// </summary>
-    [CreateAssetMenu(fileName = "New DialogueVariables", menuName = "Dialogue/Dialogue Variables", order = 1)]
+    [CreateAssetMenu(fileName = "New DialogueVariables", menuName = "Dialogue/Dialogue Variables", order = 30)]
     public sealed class DialogueVariables : ScriptableObject
     {
         #region Properties
