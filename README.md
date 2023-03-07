@@ -1,7 +1,7 @@
 # dialogue
 This repository is a Unity package for a dialogue framework based on [ink](https://github.com/inkle/ink).
 
-You will need to add `com.inkle.ink-unity-integration": "https://github.com/inkle/ink-unity-integration.git#upm` to your project's package manifest for this package to work!
+You will need to add `"com.inkle.ink-unity-integration": "https://github.com/inkle/ink-unity-integration.git#upm"` to your project's package manifest for this package to work!
 
 The package offers various MonoBehaviours that wrap around one or more ink stories, allowing their input to be handled by a custom processor class which is itself oblivious to the specifics of ink. This separation of concerns makes for clean implementations.
 Included are:
