@@ -136,7 +136,7 @@ namespace StephanHooft.Dialogue
             dialogueProcessor.OpenDialogueInterface();
             if (TrackingVariables)
                 dialogueVariablesAsset.StartListening(Story);
-            OnDialogueBegin.Invoke();
+            OnDialogueBegin?.Invoke();
             ProcessNextDialogueLine();
         }
 
@@ -156,7 +156,7 @@ namespace StephanHooft.Dialogue
             dialogueProcessor.OpenDialogueInterface();
             if(TrackingVariables)
                 dialogueVariablesAsset.StartListening(Story);
-            OnDialogueBegin.Invoke();
+            OnDialogueBegin?.Invoke();
             ProcessNextDialogueLine();
         }
 
@@ -171,7 +171,7 @@ namespace StephanHooft.Dialogue
             if (TrackingVariables)
                 dialogueVariablesAsset.StopListening(Story);
             dialogueProcessor.CloseDialogueInterface();
-            OnDialogueEnd.Invoke();
+            OnDialogueEnd?.Invoke();
         }
 
         /// <summary>
