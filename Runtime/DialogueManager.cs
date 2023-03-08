@@ -132,8 +132,6 @@ namespace StephanHooft.Dialogue
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
             Story.ResetState();
-            if (!CanContinueDialogue && !DialogueChoicesAvailable)
-                throw Exceptions.CannotBeginStory;
             inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if (TrackingVariables)
@@ -154,8 +152,6 @@ namespace StephanHooft.Dialogue
                 throw Exceptions.DialogueAlreadyInProgress;
             Story.ResetState();
             JumpToKnot(startingKnot);
-            if (!CanContinueDialogue && !DialogueChoicesAvailable)
-                throw Exceptions.CannotBeginStory;
             inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if(TrackingVariables)
@@ -342,9 +338,6 @@ namespace StephanHooft.Dialogue
 
         private static class Exceptions
         {
-            public static StoryException CannotBeginStory
-                => new("Cannot begin story: No content was found.");
-
             public static InvalidOperationException DialogueAlreadyInProgress
                 => new("A dialogue is already in progress.");
 
@@ -353,9 +346,6 @@ namespace StephanHooft.Dialogue
 
             public static ArgumentException InvalidKnotFormat(string knot)
                 => new($"Knot address '{knot}' is incorrectly formatted.");
-
-            internal static ArgumentException InvalidToken
-                => new("The provided token is invalid.");
 
             public static ArgumentException KnotPlusStitchDoesNotExist(string knot, string stitch)
                 => new($"Knot+Stitch address '{knot}.{stitch}' does not exist in the story.");
