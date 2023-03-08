@@ -1,5 +1,6 @@
 using Ink.Runtime;
 using StephanHooft.Dialogue.Data;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,6 +18,20 @@ namespace StephanHooft.Dialogue
     /// </summary>
     public sealed class DialogueManager : MonoBehaviour
     {
+        #region Events
+
+        /// <summary>
+        /// Invoked when the <see cref="DialogueManager"/> begins a story.
+        /// </summary>
+        public event Action OnDialogueBegin;
+
+        /// <summary>
+        /// Invoked when the <see cref="DialogueManager"/> stops progressing a story.
+        /// </summary>
+        public event Action OnDialogueEnd;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
         #region Properties
 
         /// <summary>
@@ -36,7 +51,7 @@ namespace StephanHooft.Dialogue
         /// True if the <see cref="DialogueManager"/> is currently running an ink story.
         /// </summary>
         public bool DialogueInProgress
-            => currentToken != null;
+            => inProgress;
 
         /// <summary>
         /// True if the <see cref="DialogueManager"/> is running an ink story, which is waiting on a choice.
@@ -71,8 +86,8 @@ namespace StephanHooft.Dialogue
         [Header("Dialogue Variables (Optional)")]
         private DialogueVariables dialogueVariablesAsset;
 
-        private Token currentToken;
         private Story story;
+        private bool inProgress = false;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -99,15 +114,11 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// Advance the ink story.
         /// </summary>
-        /// <param name="token">
-        /// The <see cref="Token"/> that was returned when the story was begun.
         /// </param>
-        public void Advance(Token token)
+        public void Advance()
         {
             if (!DialogueInProgress)
                 throw Exceptions.NoDialogueInProgress;
-            if (token != currentToken)
-                throw Exceptions.InvalidToken;
             if (!CanContinueDialogue)
                 throw Exceptions.StoryCannotContinue;
             ProcessNextDialogueLine();
@@ -116,23 +127,19 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// Begin the ink story.
         /// </summary>
-        /// <returns>
-        /// A <see cref="Token"/> reference, which must be used to authenticate further story operations.
-        /// </returns>
-        public Token Begin()
+        public void Begin()
         {
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
-            currentToken = new();
             Story.ResetState();
             if (!CanContinueDialogue && !DialogueChoicesAvailable)
                 throw Exceptions.CannotBeginStory;
+            inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if (TrackingVariables)
                 dialogueVariablesAsset.StartListening(Story);
+            OnDialogueBegin.Invoke();
             ProcessNextDialogueLine();
-            return
-                currentToken;
         }
 
         /// <summary>
@@ -141,42 +148,34 @@ namespace StephanHooft.Dialogue
         /// <param name="startingKnot">
         /// The <see cref="string"/> name of the knot at which to begin the ink story.
         /// </param>
-        /// <returns>
-        /// A <see cref="Token"/> reference, which must be used to authenticate further story operations.
-        /// </returns>
-        public Token Begin(string startingKnot)
+        public void Begin(string startingKnot)
         {
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
-            currentToken = new();
             Story.ResetState();
             JumpToKnot(startingKnot);
             if (!CanContinueDialogue && !DialogueChoicesAvailable)
                 throw Exceptions.CannotBeginStory;
+            inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if(TrackingVariables)
                 dialogueVariablesAsset.StartListening(Story);
+            OnDialogueBegin.Invoke();
             ProcessNextDialogueLine();
-            return
-                currentToken;
         }
 
         /// <summary>
         /// Stop running the ink story.
         /// </summary>
-        /// <param name="token">
-        /// The <see cref="Token"/> that was returned when the story was begun.
-        /// </param>
-        public void End(Token token)
+        public void End()
         {
             if (!DialogueInProgress)
                 throw Exceptions.NoDialogueInProgress;
-            if (token != currentToken)
-                throw Exceptions.InvalidToken;
+            inProgress = false;
             if (TrackingVariables)
                 dialogueVariablesAsset.StopListening(Story);
             dialogueProcessor.CloseDialogueInterface();
-            currentToken = null;
+            OnDialogueEnd.Invoke();
         }
 
         /// <summary>
@@ -197,13 +196,8 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// If waiting on a <see cref="DialogueLine"/> to be processed, this method can be used to "rush" that line.
         /// </summary>
-        /// <param name="token">
-        /// The <see cref="Token"/> that was returned when the story was begun.
-        /// </param>
-        public void RushCurrentDialogueLine(Token token)
+        public void RushCurrentDialogueLine()
         {
-            if (token != currentToken)
-                throw Exceptions.InvalidToken;
             dialogueProcessor.RushCurrentDialogueLine();
         }
 
@@ -344,17 +338,6 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
-        #region Token Class
-
-        /// <summary>
-        /// A simple token generated whenever a <see cref="DialogueManager"/> begins running an ink story. The
-        /// requirement to pass a reference to this token for further story operations helps to prevent multiple
-        /// entities from (unintentionally) acting on one <see cref="DialogueManager"/> at the same time.
-        /// </summary>
-        public class Token
-        { }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        #endregion
         #region Exceptions
 
         private static class Exceptions
@@ -362,49 +345,49 @@ namespace StephanHooft.Dialogue
             public static StoryException CannotBeginStory
                 => new("Cannot begin story: No content was found.");
 
-            public static System.InvalidOperationException DialogueAlreadyInProgress
+            public static InvalidOperationException DialogueAlreadyInProgress
                 => new("A dialogue is already in progress.");
 
-            public static System.IndexOutOfRangeException IndexOutOfRange(int index, int count)
+            public static IndexOutOfRangeException IndexOutOfRange(int index, int count)
                 => new($"Choice with index {index} is invalid. Only {count} choices are available.");
 
-            public static System.ArgumentException InvalidKnotFormat(string knot)
+            public static ArgumentException InvalidKnotFormat(string knot)
                 => new($"Knot address '{knot}' is incorrectly formatted.");
 
-            internal static System.ArgumentException InvalidToken
+            internal static ArgumentException InvalidToken
                 => new("The provided token is invalid.");
 
-            public static System.ArgumentException KnotPlusStitchDoesNotExist(string knot, string stitch)
+            public static ArgumentException KnotPlusStitchDoesNotExist(string knot, string stitch)
                 => new($"Knot+Stitch address '{knot}.{stitch}' does not exist in the story.");
 
-            public static System.ArgumentException KnotDoesNotExist(string knot)
+            public static ArgumentException KnotDoesNotExist(string knot)
                 => new($"Knot address '{knot}' does not exist in the story.");
 
-            public static System.ArgumentException KnotIsNull
+            public static ArgumentException KnotIsNull
                 => new("Knot address cannot be null or empty.");
 
-            public static System.InvalidOperationException NoDialogueInProgress
+            public static InvalidOperationException NoDialogueInProgress
                 => new("No dialogue is currently in progress");
 
-            public static System.InvalidOperationException NoOptionsAvailable
+            public static InvalidOperationException NoOptionsAvailable
                 => new("No dialogue options are available.");
 
-            public static System.InvalidOperationException NoSaveLoadDuringDialogue
+            public static InvalidOperationException NoSaveLoadDuringDialogue
                 => new("The variables of a Story may not be adjusted while a Dialogue is in progress.");
 
-            public static System.InvalidOperationException NotTrackingGlobalVariables
+            public static InvalidOperationException NotTrackingGlobalVariables
                 => new($"Method cannot be called: No {GlobalVariablesName} has been set.");
 
-            public static System.InvalidOperationException StoryCannotContinue
+            public static InvalidOperationException StoryCannotContinue
                 => new("The story cannot continue further.");
 
-            public static System.ArgumentException TagIncorrectlyFormatted(string tag)
+            public static ArgumentException TagIncorrectlyFormatted(string tag)
                 => new($"Tag '{tag}' is incorrectly formatted.");
 
             public static void ThrowIfNull(object argument, string paramName)
             {
                 if (argument == null)
-                    throw new System.ArgumentNullException(paramName);
+                    throw new ArgumentNullException(paramName);
             }
 
             private static string GlobalVariablesName
