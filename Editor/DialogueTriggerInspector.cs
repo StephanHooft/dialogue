@@ -65,7 +65,7 @@ namespace StephanHooft.Dialogue.EditorScripts
         private void DrawEntryLabelProperty()
         {
             var manager = (DialogueManager)dialogueManager.objectReferenceValue;
-            var text = manager.AssetText;
+            var text = manager.Asset.Text;
             if(text == null)
             {
                 EditorGUILayout.HelpBox(NoDialogueAsset, MessageType.Warning);

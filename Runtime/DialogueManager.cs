@@ -35,17 +35,25 @@ namespace StephanHooft.Dialogue
         #region Properties
 
         /// <summary>
-        /// The ink story JSON assigned to the <see cref="DialogueManager"/> through its <see cref="DialogueAsset"/>,
-        /// if any.
+        /// The <see cref="DialogueAsset"/> assigned to the <see cref="DialogueManager"/>.
         /// </summary>
-        public string AssetText
-            => dialogueAsset == null ? null : dialogueAsset.Text;
+        public DialogueAsset Asset
+        {
+            get { return dialogueAsset; }
+            set
+            {
+                if (DialogueInProgress)
+                    throw Exceptions.DialogueAlreadyInProgress;
+                story = value is not null ? CreateNewStory(value.Text) : null;
+                dialogueAsset = value;
+            }
+        }
 
         /// <summary>
         /// Whether the ink story can be advanced. (Only applicable if a story is in progress.)
         /// </summary>
         public bool CanContinueDialogue
-            => DialogueInProgress && Story.canContinue;
+            => DialogueInProgress && story.canContinue;
 
         /// <summary>
         /// True if the <see cref="DialogueManager"/> is currently running an ink story.
@@ -57,7 +65,21 @@ namespace StephanHooft.Dialogue
         /// True if the <see cref="DialogueManager"/> is running an ink story, which is waiting on a choice.
         /// </summary>
         public bool DialogueChoicesAvailable
-            => DialogueInProgress && ChoicesAvailable(Story);
+            => DialogueInProgress && ChoicesAvailable(story);
+
+        /// <summary>
+        /// The <see cref="DialogueProcessor"/> assigned to the <see cref="DialogueManager"/>.
+        /// </summary>
+        public DialogueProcessor Processor
+        {
+            get { return dialogueProcessor; }
+            set
+            {
+                if (DialogueInProgress)
+                    throw Exceptions.DialogueAlreadyInProgress;
+                dialogueProcessor = value;
+            }
+        }
 
         /// <summary>
         /// True if the <see cref="DialogueManager"/> is waiting on its assigned <see cref="DialogueProcessor"/> to
@@ -65,9 +87,6 @@ namespace StephanHooft.Dialogue
         /// </summary>
         public bool WaitingForDialogueLineToProcess
             => dialogueProcessor.ProcessingDialogueLine;
-
-        private Story Story
-            => story ?? CreateNewStory();
 
         private bool TrackingVariables
             => dialogueVariablesAsset != null;
@@ -95,9 +114,8 @@ namespace StephanHooft.Dialogue
 
         private void Awake()
         {
-            Exceptions.ThrowIfNull(dialogueProcessor, "dialogueProcessor");
-            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
-            Exceptions.ThrowIfNull(Story, "Story"); // Ensure story is created ASAP
+            if (dialogueAsset != null)
+                story = CreateNewStory(dialogueAsset.Text);
             if (TrackingVariables)
                 dialogueVariablesAsset.Initialise();
         }
@@ -131,11 +149,13 @@ namespace StephanHooft.Dialogue
         {
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
-            Story.ResetState();
+            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
+            Exceptions.ThrowIfNull(dialogueProcessor, "dialogueProcessor");
+            story.ResetState();
             inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if (TrackingVariables)
-                dialogueVariablesAsset.StartListening(Story);
+                dialogueVariablesAsset.StartListening(story);
             OnDialogueBegin?.Invoke();
             ProcessNextDialogueLine();
         }
@@ -150,12 +170,14 @@ namespace StephanHooft.Dialogue
         {
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
-            Story.ResetState();
+            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
+            Exceptions.ThrowIfNull(dialogueProcessor, "dialogueProcessor");
+            story.ResetState();
             JumpToKnot(startingKnot);
             inProgress = true;
             dialogueProcessor.OpenDialogueInterface();
             if(TrackingVariables)
-                dialogueVariablesAsset.StartListening(Story);
+                dialogueVariablesAsset.StartListening(story);
             OnDialogueBegin?.Invoke();
             ProcessNextDialogueLine();
         }
@@ -169,7 +191,7 @@ namespace StephanHooft.Dialogue
                 throw Exceptions.NoDialogueInProgress;
             inProgress = false;
             if (TrackingVariables)
-                dialogueVariablesAsset.StopListening(Story);
+                dialogueVariablesAsset.StopListening(story);
             dialogueProcessor.CloseDialogueInterface();
             OnDialogueEnd?.Invoke();
         }
@@ -186,7 +208,8 @@ namespace StephanHooft.Dialogue
                 throw Exceptions.NotTrackingGlobalVariables;
             if (DialogueInProgress)
                 throw Exceptions.NoSaveLoadDuringDialogue;
-            dialogueVariablesAsset.LoadVariables(json, Story);
+            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
+            dialogueVariablesAsset.LoadVariables(json, story);
         }
 
         /// <summary>
@@ -207,14 +230,15 @@ namespace StephanHooft.Dialogue
         {
             if (DialogueInProgress)
                 throw Exceptions.NoSaveLoadDuringDialogue;
+            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
             return TrackingVariables
                 ? dialogueVariablesAsset.SaveVariables()
                 : throw Exceptions.NotTrackingGlobalVariables;
         }
 
-        private Story CreateNewStory()
+        private Story CreateNewStory(string text)
         {
-            story = new(dialogueAsset.Text);
+            story = new(text);
             story.onError += (msg, type) =>
             {
                 if (type == Ink.ErrorType.Warning)
@@ -227,9 +251,9 @@ namespace StephanHooft.Dialogue
 
         private DialogueCue GetDialogueCue()
         {
-            if (Story.canContinue)
+            if (story.canContinue)
                 return DialogueCue.CanContinue;
-            else if (!ChoicesAvailable(Story))
+            else if (!ChoicesAvailable(story))
                 return DialogueCue.EndReached;
             else
                 return DialogueCue.None;
@@ -237,11 +261,11 @@ namespace StephanHooft.Dialogue
 
         private DialogueChoice[] GetDialogueChoices()
         {
-            var count = Story.currentChoices.Count;
+            var count = story.currentChoices.Count;
             DialogueChoice[] options = new DialogueChoice[count];
             for (int i = 0; i < count; i++)
             {
-                var choice = Story.currentChoices[i];
+                var choice = story.currentChoices[i];
                 var index = choice.index;
                 var text = choice.text;
                 var choiceHasTags = choice.tags != null && choice.tags.Count > 0;
@@ -264,12 +288,12 @@ namespace StephanHooft.Dialogue
                     throw Exceptions.InvalidKnotFormat(knotAddress);
                 var knot = splitString[0];
                 var stitch = splitString[1];
-                if (!ContainsKnot(Story, knot, stitch))
+                if (!ContainsKnot(story, knot, stitch))
                     throw Exceptions.KnotPlusStitchDoesNotExist(knot, stitch);
             }
-            else if (!ContainsKnot(Story, knotAddress))
+            else if (!ContainsKnot(story, knotAddress))
                 throw Exceptions.KnotDoesNotExist(knotAddress);
-            Story.ChoosePathString(knotAddress);
+            story.ChoosePathString(knotAddress);
         }
 
         private DialogueTag[] ParseTags(List<string> tags)
@@ -289,8 +313,8 @@ namespace StephanHooft.Dialogue
 
         private void ProcessNextDialogueLine()
         {
-            var text = Story.Continue();
-            var tags = ParseTags(Story.currentTags);
+            var text = story.Continue();
+            var tags = ParseTags(story.currentTags);
             var options = GetDialogueChoices();
             var line = new DialogueLine(text, tags, options);
             var cue = GetDialogueCue();
@@ -299,12 +323,12 @@ namespace StephanHooft.Dialogue
 
         private void SelectDialogChoice(int index)
         {
-            var count = Story.currentChoices.Count;
+            var count = story.currentChoices.Count;
             if(count == 0)
                 throw Exceptions.NoOptionsAvailable;
             if (index >= count)
                 throw Exceptions.IndexOutOfRange(index, count);
-            Story.ChooseChoiceIndex(index);
+            story.ChooseChoiceIndex(index);
             ProcessNextDialogueLine();
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,7 +363,7 @@ namespace StephanHooft.Dialogue
         private static class Exceptions
         {
             public static InvalidOperationException DialogueAlreadyInProgress
-                => new("A dialogue is already in progress.");
+                => new("Cannot perform operation while a dialogue is already in progress.");
 
             public static IndexOutOfRangeException IndexOutOfRange(int index, int count)
                 => new($"Choice with index {index} is invalid. Only {count} choices are available.");
