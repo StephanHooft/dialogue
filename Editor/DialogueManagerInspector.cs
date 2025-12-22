@@ -1,3 +1,4 @@
+using Ink.Runtime;
 using StephanHooft.Dialogue.Data;
 using UnityEditor;
 using UnityEngine;
@@ -13,9 +14,10 @@ namespace StephanHooft.Dialogue.EditorScripts
     {
         #region Fields
 
-        private SerializedProperty dialogueProcessor;
-        private SerializedProperty dialogueVariables;
         private SerializedProperty dialogueAsset;
+        private SerializedProperty startingKnot;
+        private SerializedProperty dialogueVariables;
+        private Story story;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -23,54 +25,35 @@ namespace StephanHooft.Dialogue.EditorScripts
 
         private void OnEnable()
         {
-            dialogueProcessor = serializedObject.FindProperty("dialogueProcessor");
-            dialogueVariables = serializedObject.FindProperty("dialogueVariablesAsset");
             dialogueAsset = serializedObject.FindProperty("dialogueAsset");
+            startingKnot = serializedObject.FindProperty("startingKnot");
+            dialogueVariables = serializedObject.FindProperty("dialogueVariablesAsset");
         }
 
         public override void OnInspectorGUI()
         {
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
-            if (!Application.isPlaying)
+            var enabled = GUI.enabled;
+            if (Application.isPlaying)
+                GUI.enabled = false;
+            var bufferedAsset = (TextAsset)dialogueAsset.objectReferenceValue;
+            EditorGUILayout.PropertyField(dialogueAsset);
+            var asset = (TextAsset)dialogueAsset.objectReferenceValue;
+            if (bufferedAsset != asset)
+                startingKnot.stringValue = "";
+            if(asset != null)
             {
-                if (DrawMandatoryReferenceProperty<DialogueAsset>(dialogueAsset))
-                {
-                    var asset = dialogueAsset.objectReferenceValue as DialogueAsset;
-                    try { var textAsset = asset.Text; }
-                    catch (UnityEngine.MissingReferenceException)
-                    { EditorGUILayout.HelpBox(NoTextAsset, MessageType.Warning); }
-                }
-                DrawMandatoryReferenceProperty<DialogueProcessor>(dialogueProcessor);
-                EditorGUILayout.PropertyField(dialogueVariables);
+                EditorGUI.indentLevel++;
+                story = new(asset.text);
+                startingKnot.stringValue = PropertyDrawers.DrawKnotProperty("Starting Knot", startingKnot.stringValue, story);
+                EditorGUI.indentLevel--;
             }
+            EditorGUILayout.PropertyField(dialogueVariables);
+            GUI.enabled = enabled;
             serializedObject.ApplyModifiedProperties();
             EditorGUI.EndChangeCheck();
         }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        #endregion
-        #region Methods
-
-        private bool DrawMandatoryReferenceProperty<T>(SerializedProperty property)
-        {
-            EditorGUILayout.PropertyField(property);
-            if (property.objectReferenceValue == null)
-            {
-                EditorGUILayout.HelpBox(MustReferenceA(typeof(T)), MessageType.Warning);
-                return false;
-            }
-            return true;
-        }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        #endregion
-        #region Error Messages
-
-        private string NoTextAsset
-            => $"The {typeof(DialogueAsset).Name} is missing a {typeof(UnityEngine.TextAsset).Name}.";
-
-        private string MustReferenceA(System.Type type) => string.Format("{0} must reference a {1}",
-            typeof(DialogueManager).Name, type.Name);
-
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
     }

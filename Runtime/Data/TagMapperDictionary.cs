@@ -6,33 +6,33 @@ namespace StephanHooft.Dialogue.Data
 {
     /// <summary>
     /// A serializable dictionary (with <see cref="string"/>s as keys) to store <typeparamref name="T"/>s matching
-    /// a <see cref="DialogueTag"/>'s values.
+    /// a <see cref="string"/> tag's values.
     /// </summary>
     [System.Serializable]
-    public sealed class DialogueTagDictionary<T> : ISerializationCallbackReceiver
+    public sealed class TagMapperDictionary<T> : ISerializationCallbackReceiver
     {
         #region Properties
 
         /// <summary>
-        /// Returns true if the <see cref="DialogueTagDictionary{T}"/> contains a particular <paramref name="key"/>.
+        /// Returns true if the <see cref="TagMapperDictionary{T}"/> contains a particular <paramref name="key"/>.
         /// </summary>
         /// <param name="key">
         /// The <see cref="string"/> key to check for.
         /// </param>
         /// <returns>
-        /// True if the <paramref name="key"/> is contained by the <see cref="DialogueTagDictionary{T}"/>.
+        /// True if the <paramref name="key"/> is contained by the <see cref="TagMapperDictionary{T}"/>.
         /// </returns>
         public bool ContainsKey(string key)
             => dictionary.ContainsKey(key);
 
         /// <summary>
-        /// The number of items in the <see cref="DialogueTagDictionary{T}"/>.
+        /// The number of items in the <see cref="TagMapperDictionary{T}"/>.
         /// </summary>
         public int Count
             => dictionary.Count;
 
         /// <summary>
-        /// Retrieves a <typeparamref name="T"/> from the <see cref="DialogueTagDictionary{T}"/> by
+        /// Retrieves a <typeparamref name="T"/> from the <see cref="TagMapperDictionary{T}"/> by
         /// <paramref name="key"/>.
         /// </summary>
         /// <param name="key">
@@ -198,7 +198,7 @@ namespace StephanHooft.Dialogue.Data
                 => new($"No entry with key '{key}' was found in the {TypeName}.", e);
 
             private static string TypeName
-                => typeof(DialogueTagDictionary<T>).Name;
+                => typeof(TagMapperDictionary<T>).Name;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

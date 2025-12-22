@@ -12,12 +12,17 @@ namespace StephanHooft.Dialogue
         None,
 
         /// <summary>
-        /// A dialogue cue should be shown to indicate that the story can continue.
+        /// Dialogue can continue.
         /// </summary>
         CanContinue,
 
         /// <summary>
-        /// A dialogue cue should be shown to indicate that the end of the story has been reached.
+        /// A choice must be made before dialogue can continue.
+        /// </summary>
+        Choice,
+
+        /// <summary>
+        /// The end of a dialogue has been reached.
         /// </summary>
         EndReached,
     }

@@ -24,11 +24,6 @@ namespace StephanHooft.Dialogue
         /// </summary>
         public readonly DialogueTag[] tags;
 
-        /// <summary>
-        /// The delegate to call if this dialogue choice is selected.
-        /// </summary>
-        public readonly Action<int> choiceCallback;
-
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Constructor
@@ -45,15 +40,11 @@ namespace StephanHooft.Dialogue
         /// <param name="tags">
         /// The "choice tags" associated with the dialogue choice, if any.
         /// </param>
-        /// <param name="choiceCallback">
-        /// The delegate to call if this dialogue choice is selected.
-        /// </param>
-        public DialogueChoice(int index, string text, DialogueTag[] tags, Action<int> choiceCallback)
+        public DialogueChoice(int index, string text, DialogueTag[] tags)
         {
             this.index = index;
             this.text = text;
             this.tags = tags;
-            this.choiceCallback = choiceCallback;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

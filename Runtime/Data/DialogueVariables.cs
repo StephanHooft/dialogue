@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace StephanHooft.Dialogue.Data
 {
     /// <summary>
-    /// A <see cref="ScriptableObject"/> that helps store, save, and load the state of an ink story's global variables.
+    /// A <see cref="ScriptableObject"/> that helps store, save, and load the state of a dialogue's global variables.
     /// <para>
     /// The methods in this class do not need to be called directly. A <see cref="DialogueManager"/> relying on the
     /// <see cref="DialogueVariables"/> will do this automatically.
