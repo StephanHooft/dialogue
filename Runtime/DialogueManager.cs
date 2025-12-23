@@ -158,11 +158,8 @@ namespace StephanHooft.Dialogue
         /// </summary>
         public void AdvanceDialogue()
         {
-            if (!DialogueInProgress)
-                throw Exceptions.NoDialogueInProgress;
-            if (!CanContinueDialogue)
-                throw Exceptions.StoryCannotContinue;
-            ProcessNextDialogueLine();
+            if (DialogueInProgress && CanContinueDialogue)
+                ProcessNextDialogueLine();
         }
 
         /// <summary>
@@ -171,12 +168,10 @@ namespace StephanHooft.Dialogue
         /// <param name="choiceIndex">The <see cref="int"/> index of the choice to select.</param>
         public void AdvanceDialogue(int choiceIndex)
         {
-            if (!DialogueInProgress)
-                throw Exceptions.NoDialogueInProgress;
             var count = CurrentDialogueLine.choices.Length;
-            if (CurrentDialogueLine.cue != DialogueCue.Choice || count == 0)
-                throw Exceptions.NoOptionsAvailable;
-            if (choiceIndex >= count)
+            if (!DialogueInProgress || CurrentDialogueLine.cue != DialogueCue.Choice)
+                return;
+            if (choiceIndex >= count || choiceIndex < 0)
                 throw Exceptions.IndexOutOfRange(choiceIndex, count);
             OnChoice?.Invoke(this, choiceIndex);
             if (debug)
