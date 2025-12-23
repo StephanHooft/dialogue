@@ -1,14 +1,9 @@
-using Ink.Runtime;
 using UnityEditor;
 using UnityEngine;
 
 namespace StephanHooft.Dialogue.EditorScripts
 {
-    /// <summary>
-    /// Custom inspector for the <see cref="DialogueManager"/> class.
-    /// </summary>
     [CustomEditor(typeof(DialogueManager))]
-    [CanEditMultipleObjects]
     public sealed class DialogueManagerInspector : Editor
     {
         #region Fields
@@ -41,7 +36,7 @@ namespace StephanHooft.Dialogue.EditorScripts
             GUI.enabled = enabled;
             EditorGUILayout.Separator();
             EditorGUILayout.PropertyField(debug, new GUIContent("Debug Mode"));
-
+            DrawSeparator();
             serializedObject.ApplyModifiedProperties(); // What happens if we don't have this?
 
             if (debug.boolValue && Application.isPlaying)
@@ -53,7 +48,6 @@ namespace StephanHooft.Dialogue.EditorScripts
 
         private static void DrawEditorTestInterface(DialogueManager manager)
         {
-            DrawSeparator();
             EditorGUILayout.LabelField("Status", GetCurrentStatus(manager));
             if (manager.Text != null && !manager.DialogueInProgress)
             {

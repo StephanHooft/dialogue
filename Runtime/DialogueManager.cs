@@ -4,15 +4,8 @@ using UnityEngine;
 
 namespace StephanHooft.Dialogue
 {
-    /// <summary>
-    /// A <see cref="MonoBehaviour"/> that encapsulates an ink-based story for Unity to generate dialogue feeds.
-    /// This class can be addressed directly, or can be activated through a <see cref="DialogueTrigger"/>.
-    /// <para>
-    /// Optionally, a <see cref="DialogueVariables"/> instance can be assigned in-Editor if the state of variables must be
-    /// stored and/or shared.
-    /// </para>
-    /// </summary>
-    public sealed class DialogueManager : MonoBehaviour
+    [CreateAssetMenu(fileName = "DialogueManager", menuName = "Dialogue/Dialogue Manager")]
+    public class DialogueManager : ScriptableObject
     {
         #region Events
 
@@ -92,19 +85,19 @@ namespace StephanHooft.Dialogue
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
-        #region MonoBehaviour Implementation
+        #region ScriptableObject Implementation
 
-        private void Awake()
-        {
-            if (TrackingVariables)
-                dialogueVariablesAsset.Initialise();
-        }
+        //private void Awake()
+        //{
+        //    if (TrackingVariables)
+        //        dialogueVariablesAsset.Initialise();
+        //}
 
-        private void OnDestroy()
-        {
-            if (TrackingVariables)
-                dialogueVariablesAsset.UnInitialise();
-        }
+        //private void OnDestroy()
+        //{
+        //    if (TrackingVariables)
+        //        dialogueVariablesAsset.UnInitialise();
+        //}
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Methods
@@ -221,7 +214,7 @@ namespace StephanHooft.Dialogue
                     throw Exceptions.InvalidKnotFormat(knotAddress);
                 var knot = splitString[0];
                 var stitch = splitString[1];
-                if (!story.ContainsKnot(knot,stitch))
+                if (!story.ContainsKnot(knot, stitch))
                     throw Exceptions.KnotPlusStitchDoesNotExist(knot, stitch);
             }
             else if (!story.ContainsKnot(knotAddress))
@@ -298,7 +291,11 @@ namespace StephanHooft.Dialogue
             };
             return story;
         }
-        
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
+        #region Singleton Behaviour
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Exceptions
