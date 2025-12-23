@@ -14,10 +14,8 @@ namespace StephanHooft.Dialogue.EditorScripts
         #region Fields
 
         private SerializedProperty dialogueAsset;
-        private SerializedProperty startingKnot;
         private SerializedProperty dialogueVariables;
         private SerializedProperty debug;
-        private Story story;
         private DialogueManager manager;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +25,6 @@ namespace StephanHooft.Dialogue.EditorScripts
         private void OnEnable()
         {
             dialogueAsset = serializedObject.FindProperty("dialogueAsset");
-            startingKnot = serializedObject.FindProperty("startingKnot");
             dialogueVariables = serializedObject.FindProperty("dialogueVariablesAsset");
             debug = serializedObject.FindProperty("debug");
             manager = (DialogueManager)serializedObject.targetObject;
@@ -35,57 +32,59 @@ namespace StephanHooft.Dialogue.EditorScripts
 
         public override void OnInspectorGUI()
         {
-            EditorGUI.BeginChangeCheck();
             serializedObject.Update();
-
             var enabled = GUI.enabled;
             if (manager.DialogueInProgress)
                 GUI.enabled = false;
-            PropertyDrawers.DrawDialogueAssetProperty(dialogueAsset, startingKnot, story, !manager.DialogueInProgress);
-            if (Application.isPlaying)
-                GUI.enabled = false;
+            EditorGUILayout.PropertyField(dialogueAsset);
             EditorGUILayout.PropertyField(dialogueVariables);
             GUI.enabled = enabled;
             EditorGUILayout.Separator();
             EditorGUILayout.PropertyField(debug, new GUIContent("Debug Mode"));
 
-            serializedObject.ApplyModifiedProperties();
-            EditorGUI.EndChangeCheck();
+            serializedObject.ApplyModifiedProperties(); // What happens if we don't have this?
 
-            DrawEditorTestInterface();
+            if (debug.boolValue && Application.isPlaying)
+                DrawEditorTestInterface(manager);
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Methods
 
-        private void DrawEditorTestInterface()
+        private static void DrawEditorTestInterface(DialogueManager manager)
         {
-            if (debug.boolValue && Application.isPlaying)
+            DrawSeparator();
+            EditorGUILayout.LabelField("Status", GetCurrentStatus(manager));
+            if (manager.Text != null && !manager.DialogueInProgress)
             {
-                DrawSeparator();
-                EditorGUILayout.LabelField("Status", GetCurrentStatus(manager));
-                if (!manager.DialogueInProgress && GUILayout.Button("Start Dialogue"))
-                    manager.StartDialogue(startingKnot.stringValue);
-                if (manager.DialogueInProgress)
+                if (GUILayout.Button("Start Dialogue"))
                 {
-                    var cue = manager.CurrentDialogueLine.cue;
-                    switch (cue)
-                    {
-                        case DialogueCue.CanContinue:
-                            if (GUILayout.Button("Advance Dialogue"))
-                                manager.AdvanceDialogue();
-                            break;
-                        case DialogueCue.Choice:
-                            var choices = manager.CurrentDialogueLine.choices;
-                            foreach (var choice in choices)
-                                if (GUILayout.Button($"Dialogue Choice {choice.index}"))
-                                    manager.AdvanceDialogue(choice.index);
-                            break;
-                    }
-                    DrawSeparator();
-                    if (GUILayout.Button("Stop Dialogue"))
-                        manager.StopDialogue();
+                    var startingKnot = manager.StartingKnot;
+                    if (startingKnot != null && startingKnot != "")
+                        manager.StartDialogue(startingKnot);
+                    else
+                        manager.StartDialogue();
                 }
+            }
+            if (manager.DialogueInProgress)
+            {
+                var cue = manager.CurrentDialogueLine.cue;
+                switch (cue)
+                {
+                    case DialogueCue.CanContinue:
+                        if (GUILayout.Button("Advance Dialogue"))
+                            manager.AdvanceDialogue();
+                        break;
+                    case DialogueCue.Choice:
+                        var choices = manager.CurrentDialogueLine.choices;
+                        foreach (var choice in choices)
+                            if (GUILayout.Button($"Dialogue Choice {choice.index}"))
+                                manager.AdvanceDialogue(choice.index);
+                        break;
+                }
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Stop Dialogue"))
+                    manager.StopDialogue();
             }
         }
 
@@ -101,6 +100,7 @@ namespace StephanHooft.Dialogue.EditorScripts
 
         private static void DrawSeparator()
             => EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
     }
 }

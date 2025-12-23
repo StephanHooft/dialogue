@@ -54,17 +54,24 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// The most recent <see cref="DialogueLine"/> processed by the <see cref="DialogueManager"/>.
         /// </summary>
-        public DialogueLine CurrentDialogueLine
-            => line;
+        public DialogueLine CurrentDialogueLine { get; private set; } = new();
 
         /// <summary>
         /// True if the <see cref="DialogueManager"/> is currently running a dialogue.
         /// </summary>
-        public bool DialogueInProgress
-            => inProgress;
+        public bool DialogueInProgress { get; private set; }
 
+        /// <summary>
+        /// The <see cref="DialogueManager"/>'s current <see cref="string"/> starting node, if any.
+        /// </summary>
+        public string StartingKnot
+            => dialogueAsset.StartingKnot;
+
+        /// <summary>
+        /// The <see cref="DialogueManager"/>'s current <see cref="string"/> text, if any.
+        /// </summary>
         public string Text
-            => dialogueAsset != null ? dialogueAsset.text : null;
+            => dialogueAsset.Text;
 
         private bool TrackingVariables
             => dialogueVariablesAsset != null;
@@ -73,8 +80,7 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField] private TextAsset dialogueAsset;
-        [SerializeField] private string startingKnot;
+        [SerializeField] private DialogueAsset dialogueAsset;
 
         [SerializeField]
         [Header("Dialogue Variables (Optional)")]
@@ -83,8 +89,6 @@ namespace StephanHooft.Dialogue
         [SerializeField] private bool debug;
 
         private Story story;
-        private bool inProgress = false;
-        private DialogueLine line = new();
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -114,21 +118,29 @@ namespace StephanHooft.Dialogue
         /// </param>
         public void StartDialogue(string startingKnot = null)
         {
+            Exceptions.ThrowIfNull(dialogueAsset.Text, "dialogueAsset");
             if (DialogueInProgress)
-                throw Exceptions.DialogueAlreadyInProgress;
-            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
-            story = CreateNewStory(dialogueAsset.text);
-            if (startingKnot != null && startingKnot != "") JumpToKnot(startingKnot);
-            if (TrackingVariables)
-            {
-                story.variablesState.variableChangedEvent += VariableChanged;
-                dialogueVariablesAsset.StartListening(story);
-            }
-            OnDialogueStart?.Invoke(this);
-            if (debug)
-                Debug.Log($"Starting dialogue: {dialogueAsset.name}.");
-            inProgress = true;
-            ProcessNextDialogueLine();
+                StopCurrentStory();
+            StartNewStory(startingKnot);
+        }
+
+        /// <summary>
+        /// Begin a dialogue.
+        /// </summary>
+        /// <param name="dialogue">The <see cref="DialogueAsset"/> to base the new dialogue on.</param>
+        /// <param name="startingKnot">The <see cref="string"/> name of the knot at which to begin the dialogue.
+        /// Leave this empty to start in the position specified by the <see cref="DialogueAsset"/>.</param>
+        public void StartDialogue(DialogueAsset dialogue, string startingKnot = null)
+        {
+            Exceptions.ThrowIfNull(dialogue, "dialogue");
+            Exceptions.ThrowIfNull(dialogue.Text, "DialogueAsset.Text");
+            if (DialogueInProgress)
+                StopCurrentStory();
+            dialogueAsset = dialogue;
+            if (startingKnot == null)
+                StartNewStory(dialogueAsset.StartingKnot);
+            else
+                StartNewStory(startingKnot);
         }
 
         /// <summary>
@@ -137,18 +149,8 @@ namespace StephanHooft.Dialogue
         public void StopDialogue()
         {
             if (!DialogueInProgress)
-                throw Exceptions.NoDialogueInProgress;
-            story.ResetState();
-            line = new();
-            if (TrackingVariables)
-            {
-                story.variablesState.variableChangedEvent -= VariableChanged;
-                dialogueVariablesAsset.StopListening(story);
-            }
-            OnDialogueEnd?.Invoke(this);
-            if (debug)
-                Debug.Log($"Stopping dialogue: {dialogueAsset.name}.");
-            inProgress = false;
+                return;
+            StopCurrentStory();
         }
 
         /// <summary>
@@ -171,14 +173,14 @@ namespace StephanHooft.Dialogue
         {
             if (!DialogueInProgress)
                 throw Exceptions.NoDialogueInProgress;
-            var count = line.choices.Length;
-            if (line.cue != DialogueCue.Choice || count == 0)
+            var count = CurrentDialogueLine.choices.Length;
+            if (CurrentDialogueLine.cue != DialogueCue.Choice || count == 0)
                 throw Exceptions.NoOptionsAvailable;
             if (choiceIndex >= count)
                 throw Exceptions.IndexOutOfRange(choiceIndex, count);
             OnChoice?.Invoke(this, choiceIndex);
             if (debug)
-                Debug.Log($"Selected dialogue choice {choiceIndex}: {line.choices[choiceIndex].text}.");
+                Debug.Log($"Selected dialogue choice {choiceIndex}: {CurrentDialogueLine.choices[choiceIndex].text}.");
             story.ChooseChoiceIndex(choiceIndex);
             ProcessNextDialogueLine();
         }
@@ -238,14 +240,45 @@ namespace StephanHooft.Dialogue
             var tags = story.GetDialogueTags();
             var choices = story.GetDialogueChoices();
             var cue = story.GetDialogueCue();
-            line = new DialogueLine(text, tags, choices, cue);
-            OnDialogueLine?.Invoke(this, line);
+            CurrentDialogueLine = new DialogueLine(text, tags, choices, cue);
+            OnDialogueLine?.Invoke(this, CurrentDialogueLine);
             if (debug)
             {
-                Debug.Log(line);
+                Debug.Log(CurrentDialogueLine);
                 foreach (var choice in choices)
                     Debug.Log(choice);
             }
+        }
+
+        private void StartNewStory(string startingKnot)
+        {
+            story = CreateNewStory(dialogueAsset.Text);
+            if (startingKnot != null && startingKnot != "") JumpToKnot(startingKnot);
+            if (TrackingVariables)
+            {
+                story.variablesState.variableChangedEvent += VariableChanged;
+                dialogueVariablesAsset.StartListening(story);
+            }
+            OnDialogueStart?.Invoke(this);
+            if (debug)
+                Debug.Log($"Starting dialogue: {dialogueAsset.Name}.");
+            DialogueInProgress = true;
+            ProcessNextDialogueLine();
+        }
+
+        private void StopCurrentStory()
+        {
+            story.ResetState();
+            CurrentDialogueLine = new();
+            if (TrackingVariables)
+            {
+                story.variablesState.variableChangedEvent -= VariableChanged;
+                dialogueVariablesAsset.StopListening(story);
+            }
+            OnDialogueEnd?.Invoke(this);
+            if (debug)
+                Debug.Log($"Stopping dialogue: {dialogueAsset.Name}.");
+            DialogueInProgress = false;
         }
 
         private void VariableChanged(string name, Ink.Runtime.Object value)
@@ -301,9 +334,6 @@ namespace StephanHooft.Dialogue
             public static System.InvalidOperationException NoSaveLoadDuringDialogue
                 => new("The variables of a dialogue may not be saved or loaded while it is in progress.");
 
-            public static System.InvalidOperationException NotTrackingGlobalVariables
-                => new($"Method cannot be called: No {GlobalVariablesName} has been set.");
-
             public static System.InvalidOperationException StoryCannotContinue
                 => new("The dialogue cannot be advanced further. Either the dialogue has ended or a choice needs to be made.");
 
@@ -312,9 +342,6 @@ namespace StephanHooft.Dialogue
                 if (argument == null)
                     throw new System.ArgumentNullException(paramName);
             }
-
-            private static string GlobalVariablesName
-                => typeof(DialogueVariables).Name;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

@@ -56,10 +56,13 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
+        #region methods
 
         public override string ToString()
         {
             return $"Dialogue line: {text}|| {(tags.Length > 0 ? $"Tags: {string.Join(", ", tags)} || " : "")} Cue: {cue} ||";
         }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
     }
 }

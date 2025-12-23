@@ -48,10 +48,12 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
-
+        #region Methods
         public override string ToString()
         {
             return $"Dialogue choice {index}: {text}\n{(tags.Length > 0 ? $"|| Tags: {string.Join(", ", tags)}" : "")}";
         }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
     }
 }
