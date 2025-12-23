@@ -317,17 +317,8 @@ namespace StephanHooft.Dialogue
             public static System.ArgumentException KnotDoesNotExist(string knot)
                 => new($"Knot address '{knot}' does not exist in the story.");
 
-            public static System.InvalidOperationException NoDialogueInProgress
-                => new("No dialogue is currently in progress.");
-
-            public static System.InvalidOperationException NoOptionsAvailable
-                => new("No dialogue choices are available.");
-
             public static System.InvalidOperationException NoSaveLoadDuringDialogue
                 => new("The variables of a dialogue may not be saved or loaded while it is in progress.");
-
-            public static System.InvalidOperationException StoryCannotContinue
-                => new("The dialogue cannot be advanced further. Either the dialogue has ended or a choice needs to be made.");
 
             public static void ThrowIfNull(object argument, string paramName)
             {
