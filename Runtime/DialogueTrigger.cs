@@ -35,7 +35,7 @@ namespace StephanHooft.Dialogue
         public void Trigger()
         {
             if (!dialogueManager.DialogueInProgress)
-                dialogueManager.Begin(startingKnot);
+                dialogueManager.StartDialogue(startingKnot);
             else
                 Debug.LogError("Cannot trigger dialogue. DialogueManager is already progressing a story");
         }

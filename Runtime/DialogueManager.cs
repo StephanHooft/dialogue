@@ -8,8 +8,8 @@ namespace StephanHooft.Dialogue
     /// A <see cref="MonoBehaviour"/> that encapsulates an ink-based story for Unity to generate dialogue feeds.
     /// This class can be addressed directly, or can be activated through a <see cref="DialogueTrigger"/>.
     /// <para>
-    /// Optionally, a <see cref="DialogueVariables"/> can be assigned in-Editor if the state of variables should be
-    /// stored or preserved between sessions and/or scenes.
+    /// Optionally, a <see cref="DialogueVariables"/> instance can be assigned in-Editor if the state of variables must be
+    /// stored and/or shared.
     /// </para>
     /// </summary>
     public sealed class DialogueManager : MonoBehaviour
@@ -29,7 +29,12 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// Invoked when the <see cref="DialogueManager"/> processes a new dialogue line.
         /// </summary>
-        public event System.Action<DialogueManager, DialogueLine> OnNewDialogueLine;
+        public event System.Action<DialogueManager, DialogueLine> OnDialogueLine;
+
+        /// <summary>
+        /// Invoked when a choice is passed to the <see cref="DialogueManager"/>.
+        /// </summary>
+        public event System.Action<DialogueManager, int> OnChoice;
 
         /// <summary>
         /// Invoked when the <see cref="DialogueManager"/> changes a dialogue variable.
@@ -45,12 +50,6 @@ namespace StephanHooft.Dialogue
         /// </summary>
         public bool CanContinueDialogue
             => DialogueInProgress && story.canContinue;
-
-        /// <summary>
-        /// The current <see cref="DialogueCue"/>, indicating the state of a dialogue in progress.
-        /// </summary>
-        public DialogueCue CurrentDialogueCue
-            => inProgress ? DialogueCue.None : line.cue;
 
         /// <summary>
         /// The most recent <see cref="DialogueLine"/> processed by the <see cref="DialogueManager"/>.
@@ -81,6 +80,8 @@ namespace StephanHooft.Dialogue
         [Header("Dialogue Variables (Optional)")]
         private DialogueVariables dialogueVariablesAsset;
 
+        [SerializeField] private bool debug;
+
         private Story story;
         private bool inProgress = false;
         private DialogueLine line = new();
@@ -91,8 +92,6 @@ namespace StephanHooft.Dialogue
 
         private void Awake()
         {
-            if (dialogueAsset != null)
-                story = CreateNewStory(dialogueAsset.text);
             if (TrackingVariables)
                 dialogueVariablesAsset.Initialise();
         }
@@ -111,13 +110,14 @@ namespace StephanHooft.Dialogue
         /// </summary>
         /// <param name="startingKnot">
         /// The <see cref="string"/> name of the knot at which to begin the dialogue.
+        /// Leave this empty to start in the default position.
         /// </param>
-        public void Begin(string startingKnot = null)
+        public void StartDialogue(string startingKnot = null)
         {
             if (DialogueInProgress)
                 throw Exceptions.DialogueAlreadyInProgress;
             Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
-            story.ResetState();
+            story = CreateNewStory(dialogueAsset.text);
             if (startingKnot != null && startingKnot != "") JumpToKnot(startingKnot);
             if (TrackingVariables)
             {
@@ -125,6 +125,8 @@ namespace StephanHooft.Dialogue
                 dialogueVariablesAsset.StartListening(story);
             }
             OnDialogueStart?.Invoke(this);
+            if (debug)
+                Debug.Log($"Starting dialogue: {dialogueAsset.name}.");
             inProgress = true;
             ProcessNextDialogueLine();
         }
@@ -132,22 +134,27 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// Stop running the current dialogue.
         /// </summary>
-        public void End()
+        public void StopDialogue()
         {
             if (!DialogueInProgress)
                 throw Exceptions.NoDialogueInProgress;
-            inProgress = false;
+            story.ResetState();
             line = new();
             if (TrackingVariables)
+            {
+                story.variablesState.variableChangedEvent -= VariableChanged;
                 dialogueVariablesAsset.StopListening(story);
+            }
             OnDialogueEnd?.Invoke(this);
+            if (debug)
+                Debug.Log($"Stopping dialogue: {dialogueAsset.name}.");
+            inProgress = false;
         }
 
         /// <summary>
-        /// Advance the current dialogue.
+        /// Advance the current dialogue. Pass no parameters if continuing normally. Pass a choice index if a choice is required for the dialogue to continue.
         /// </summary>
-        /// </param>
-        public void Advance()
+        public void AdvanceDialogue()
         {
             if (!DialogueInProgress)
                 throw Exceptions.NoDialogueInProgress;
@@ -156,53 +163,60 @@ namespace StephanHooft.Dialogue
             ProcessNextDialogueLine();
         }
 
-        //private void SelectDialogChoice(int index)
+        /// <summary>
+        /// Advance the current dialogue. Pass no parameters if continuing normally. Pass a choice index if a choice is required for the dialogue to continue.
+        /// </summary>
+        /// <param name="choiceIndex">The <see cref="int"/> index of the choice to select.</param>
+        public void AdvanceDialogue(int choiceIndex)
+        {
+            if (!DialogueInProgress)
+                throw Exceptions.NoDialogueInProgress;
+            var count = line.choices.Length;
+            if (line.cue != DialogueCue.Choice || count == 0)
+                throw Exceptions.NoOptionsAvailable;
+            if (choiceIndex >= count)
+                throw Exceptions.IndexOutOfRange(choiceIndex, count);
+            OnChoice?.Invoke(this, choiceIndex);
+            if (debug)
+                Debug.Log($"Selected dialogue choice {choiceIndex}: {line.choices[choiceIndex].text}.");
+            story.ChooseChoiceIndex(choiceIndex);
+            ProcessNextDialogueLine();
+        }
+
+        ///// <summary>
+        ///// Load the values of the dialogue's global variables from a JSON file.
+        ///// </summary>
+        ///// <param name="json">
+        ///// A chunk of JSON containing the variables to load.
+        ///// </param>
+        //public void LoadGlobalVariables(string json)
         //{
-        //    var count = story.currentChoices.Count;
-        //    if (count == 0)
-        //        throw Exceptions.NoOptionsAvailable;
-        //    if (index >= count)
-        //        throw Exceptions.IndexOutOfRange(index, count);
-        //    story.ChooseChoiceIndex(index);
-        //    ProcessNextDialogueLine();
+        //    if (!TrackingVariables)
+        //        throw Exceptions.NotTrackingGlobalVariables;
+        //    if (DialogueInProgress)
+        //        throw Exceptions.NoSaveLoadDuringDialogue;
+        //    Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
+        //    dialogueVariablesAsset.LoadVariables(json, story);
         //}
 
-        /// <summary>
-        /// Load the values of the dialogue's global variables from a JSON file.
-        /// </summary>
-        /// <param name="json">
-        /// A chunk of JSON containing the variables to load.
-        /// </param>
-        public void LoadGlobalVariables(string json)
-        {
-            if (!TrackingVariables)
-                throw Exceptions.NotTrackingGlobalVariables;
-            if (DialogueInProgress)
-                throw Exceptions.NoSaveLoadDuringDialogue;
-            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
-            dialogueVariablesAsset.LoadVariables(json, story);
-        }
-
-        /// <summary>
-        /// Save the values of the dialogue's global variables to a JSON file.
-        /// </summary>
-        /// <returns>
-        /// A chunk of JSON containing the saved variables.
-        /// </returns>
-        public string SaveGlobalVariables()
-        {
-            if (DialogueInProgress)
-                throw Exceptions.NoSaveLoadDuringDialogue;
-            Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
-            return TrackingVariables
-                ? dialogueVariablesAsset.SaveVariables()
-                : throw Exceptions.NotTrackingGlobalVariables;
-        }
+        ///// <summary>
+        ///// Save the values of the dialogue's global variables to a JSON file.
+        ///// </summary>
+        ///// <returns>
+        ///// A chunk of JSON containing the saved variables.
+        ///// </returns>
+        //public string SaveGlobalVariables()
+        //{
+        //    if (DialogueInProgress)
+        //        throw Exceptions.NoSaveLoadDuringDialogue;
+        //    Exceptions.ThrowIfNull(dialogueAsset, "dialogueAsset");
+        //    return TrackingVariables
+        //        ? dialogueVariablesAsset.SaveVariables()
+        //        : throw Exceptions.NotTrackingGlobalVariables;
+        //}
 
         private void JumpToKnot(string knotAddress)
         {
-            if (string.IsNullOrEmpty(knotAddress))
-                throw Exceptions.KnotIsNullorEmpty;
             if (knotAddress.Contains("."))
             {
                 var splitString = knotAddress.Split(".");
@@ -225,12 +239,20 @@ namespace StephanHooft.Dialogue
             var choices = story.GetDialogueChoices();
             var cue = story.GetDialogueCue();
             line = new DialogueLine(text, tags, choices, cue);
-            OnNewDialogueLine?.Invoke(this, line);
+            OnDialogueLine?.Invoke(this, line);
+            if (debug)
+            {
+                Debug.Log(line);
+                foreach (var choice in choices)
+                    Debug.Log(choice);
+            }
         }
 
         private void VariableChanged(string name, Ink.Runtime.Object value)
         {
             OnVariableChanged?.Invoke(this, name, value);
+            if (debug)
+                Debug.Log($"Dialogue variable {name} changed to: {value}.");
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -270,23 +292,20 @@ namespace StephanHooft.Dialogue
             public static System.ArgumentException KnotDoesNotExist(string knot)
                 => new($"Knot address '{knot}' does not exist in the story.");
 
-            public static System.ArgumentException KnotIsNullorEmpty
-                => new("Knot address cannot be null or empty.");
-
             public static System.InvalidOperationException NoDialogueInProgress
-                => new("No dialogue is currently in progress");
+                => new("No dialogue is currently in progress.");
 
             public static System.InvalidOperationException NoOptionsAvailable
-                => new("No dialogue options are available.");
+                => new("No dialogue choices are available.");
 
             public static System.InvalidOperationException NoSaveLoadDuringDialogue
-                => new("The variables of a Story may not be adjusted while a Dialogue is in progress.");
+                => new("The variables of a dialogue may not be saved or loaded while it is in progress.");
 
             public static System.InvalidOperationException NotTrackingGlobalVariables
                 => new($"Method cannot be called: No {GlobalVariablesName} has been set.");
 
             public static System.InvalidOperationException StoryCannotContinue
-                => new("The story cannot continue further.");
+                => new("The dialogue cannot be advanced further. Either the dialogue has ended or a choice needs to be made.");
 
             public static void ThrowIfNull(object argument, string paramName)
             {

@@ -31,15 +31,15 @@ namespace StephanHooft.Dialogue.EditorScripts
         {
             EditorGUI.BeginChangeCheck();
             serializedObject.Update();
-            if (DrawMandatoryReferenceProperty<DialogueManager>(dialogueManager))
-            {
-                EditorGUI.indentLevel++;
-                var manager = (DialogueManager)dialogueManager.objectReferenceValue;
-                var text = manager.Text;
-                story = new(text);
-                startingKnot.stringValue = PropertyDrawers.DrawKnotProperty("Starting Knot", startingKnot.stringValue, story);
-                EditorGUI.indentLevel--;
-            }
+            //if (DrawMandatoryReferenceProperty<DialogueManager>(dialogueManager))
+            //{
+            //    EditorGUI.indentLevel++;
+            //    var manager = (DialogueManager)dialogueManager.objectReferenceValue;
+            //    var text = manager.Text;
+            //    story = new(text);
+            //    startingKnot.stringValue = PropertyDrawers.DrawKnotProperty("Starting Knot", startingKnot.stringValue, story);
+            //    EditorGUI.indentLevel--;
+            //}
             serializedObject.ApplyModifiedProperties();
             EditorGUI.EndChangeCheck();
         }

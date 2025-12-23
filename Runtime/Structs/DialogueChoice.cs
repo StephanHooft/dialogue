@@ -10,19 +10,19 @@ namespace StephanHooft.Dialogue
         #region Fields
 
         /// <summary>
-        /// The <see cref="int"/> index of the dialogue choice.
+        /// The <see cref="int"/> index of the <see cref="DialogueChoice"/>.
         /// </summary>
         public readonly int index;
 
         /// <summary>
-        /// The <see cref="string"/> text with which to represent the dialogue choice.
+        /// The <see cref="string"/> text with which to represent the <see cref="DialogueChoice"/>.
         /// </summary>
         public readonly string text;
 
         /// <summary>
-        /// The "choice tags" associated with the dialogue choice, if any.
+        /// The "choice tags" associated with the <see cref="DialogueChoice"/>, if any.
         /// </summary>
-        public readonly DialogueTag[] tags;
+        public readonly string[] tags;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -32,15 +32,15 @@ namespace StephanHooft.Dialogue
         /// Create a new <see cref="DialogueChoice"/>.
         /// </summary>
         /// <param name="index">
-        /// The <see cref="int"/> index of the dialogue choice.
+        /// The <see cref="int"/> index of the <see cref="DialogueChoice"/>.
         /// </param>
         /// <param name="text">
-        /// The <see cref="string"/> text with which to represent the dialogue choice.
+        /// The <see cref="string"/> text with which to represent the <see cref="DialogueChoice"/>.
         /// </param>
         /// <param name="tags">
-        /// The "choice tags" associated with the dialogue choice, if any.
+        /// The <see cref="string"/> tags associated with the <see cref="DialogueChoice"/>, if any.
         /// </param>
-        public DialogueChoice(int index, string text, DialogueTag[] tags)
+        public DialogueChoice(int index, string text, string[] tags)
         {
             this.index = index;
             this.text = text;
@@ -48,5 +48,10 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
+
+        public override string ToString()
+        {
+            return $"Dialogue choice {index}: {text}\n{(tags.Length > 0 ? $"|| Tags: {string.Join(", ", tags)}" : "")}";
+        }
     }
 }

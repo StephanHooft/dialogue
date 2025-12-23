@@ -14,9 +14,9 @@ namespace StephanHooft.Dialogue
         public readonly string text;
 
         /// <summary>
-        /// The <see cref="DialogueLine"/>'s <see cref="DialogueTag"/>s, if any.
+        /// The <see cref="DialogueLine"/>'s <see cref="string"/> tags, if any.
         /// </summary>
-        public readonly DialogueTag[] tags;
+        public readonly string[] tags;
 
         /// <summary>
         /// The <see cref="DialogueLine"/>'s <see cref="DialogueChoice"/>s, if any.
@@ -39,7 +39,7 @@ namespace StephanHooft.Dialogue
         /// The <see cref="DialogueLine"/>'s <see cref="string"/> text.
         /// </param>
         /// <param name="tags">
-        /// <see cref="DialogueTag"/>s, if any.
+        /// <see cref="string"/>s tags, if any.
         /// </param>
         /// <param name="choices">
         /// <see cref="DialogueChoice"/>s, if any.
@@ -47,7 +47,7 @@ namespace StephanHooft.Dialogue
         /// <param name="cue">
         /// The <see cref="DialogueLine"/>'s <see cref="DialogueCue"/>.
         /// </param>
-        public DialogueLine(string text, DialogueTag[] tags, DialogueChoice[] choices, DialogueCue cue)
+        public DialogueLine(string text, string[] tags, DialogueChoice[] choices, DialogueCue cue)
         {
             this.text = text;
             this.tags = tags;
@@ -56,5 +56,10 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
+
+        public override string ToString()
+        {
+            return $"Dialogue line: {text}|| {(tags.Length > 0 ? $"Tags: {string.Join(", ", tags)} || " : "")} Cue: {cue} ||";
+        }
     }
 }
