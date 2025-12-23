@@ -310,9 +310,6 @@ namespace StephanHooft.Dialogue
 
         private static class Exceptions
         {
-            public static System.InvalidOperationException DialogueAlreadyInProgress
-                => new("Cannot perform operation while a dialogue is already in progress.");
-
             public static System.IndexOutOfRangeException IndexOutOfRange(int index, int count)
                 => new($"Choice with index {index} is invalid. Only {count} choices are available.");
 
