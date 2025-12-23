@@ -180,7 +180,7 @@ namespace StephanHooft.Dialogue
                 throw Exceptions.IndexOutOfRange(choiceIndex, count);
             OnChoice?.Invoke(this, choiceIndex);
             if (debug)
-                Debug.Log($"Selected dialogue choice {choiceIndex}: {CurrentDialogueLine.choices[choiceIndex].text}.");
+                Debug.Log($"{this.name} || Selected dialogue choice {choiceIndex}: {CurrentDialogueLine.choices[choiceIndex].text}.");
             story.ChooseChoiceIndex(choiceIndex);
             ProcessNextDialogueLine();
         }
@@ -243,7 +243,7 @@ namespace StephanHooft.Dialogue
             OnDialogueLine?.Invoke(this, CurrentDialogueLine);
             if (debug)
             {
-                Debug.Log(CurrentDialogueLine);
+                Debug.Log($"{this.name} || {CurrentDialogueLine}");
                 foreach (var choice in choices)
                     Debug.Log(choice);
             }
@@ -260,7 +260,7 @@ namespace StephanHooft.Dialogue
             }
             OnDialogueStart?.Invoke(this);
             if (debug)
-                Debug.Log($"Starting dialogue: {dialogueAsset.Name}.");
+                Debug.Log($"{this.name} || Starting dialogue: {dialogueAsset.Name}.");
             DialogueInProgress = true;
             ProcessNextDialogueLine();
         }
@@ -276,7 +276,7 @@ namespace StephanHooft.Dialogue
             }
             OnDialogueEnd?.Invoke(this);
             if (debug)
-                Debug.Log($"Stopping dialogue: {dialogueAsset.Name}.");
+                Debug.Log($"{this.name} || Stopping dialogue: {dialogueAsset.Name}.");
             DialogueInProgress = false;
         }
 
@@ -284,7 +284,7 @@ namespace StephanHooft.Dialogue
         {
             OnVariableChanged?.Invoke(this, name, value);
             if (debug)
-                Debug.Log($"Dialogue variable {name} changed to: {value}.");
+                Debug.Log($"{this.name} || Dialogue variable {name} changed to: {value}.");
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -315,9 +315,6 @@ namespace StephanHooft.Dialogue
         {
             public static System.IndexOutOfRangeException IndexOutOfRange(int index, int count)
                 => new($"Choice with index {index} is invalid. Only {count} choices are available.");
-
-            public static System.ArgumentException InvalidKnotFormat(string knot)
-                => new($"Knot address '{knot}' is incorrectly formatted.");
 
             public static System.ArgumentException KnotPlusStitchDoesNotExist(string knot, string stitch)
                 => new($"Knot+Stitch address '{knot}.{stitch}' does not exist in the story.");
