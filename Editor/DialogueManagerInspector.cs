@@ -27,6 +27,8 @@ namespace StephanHooft.Dialogue.EditorScripts
 
         public override void OnInspectorGUI()
         {
+            if (!Application.isPlaying && manager.DialogueInProgress)
+                manager.StopDialogue();
             serializedObject.Update();
             var enabled = GUI.enabled;
             if (manager.DialogueInProgress)
@@ -37,7 +39,7 @@ namespace StephanHooft.Dialogue.EditorScripts
             EditorGUILayout.Separator();
             EditorGUILayout.PropertyField(debug, new GUIContent("Debug Mode"));
             DrawSeparator();
-            serializedObject.ApplyModifiedProperties(); // What happens if we don't have this?
+            serializedObject.ApplyModifiedProperties();
 
             if (debug.boolValue && Application.isPlaying)
                 DrawEditorTestInterface(manager);
@@ -54,10 +56,8 @@ namespace StephanHooft.Dialogue.EditorScripts
                 if (GUILayout.Button("Start Dialogue"))
                 {
                     var startingKnot = manager.StartingKnot;
-                    if (startingKnot != null && startingKnot != "")
-                        manager.StartDialogue(startingKnot);
-                    else
-                        manager.StartDialogue();
+                    var startingStitch = manager.StartingStitch;
+                    manager.StartDialogue(startingKnot, startingStitch);
                 }
             }
             if (manager.DialogueInProgress)

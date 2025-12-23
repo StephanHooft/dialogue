@@ -97,26 +97,47 @@ namespace StephanHooft.Dialogue
         }
 
         /// <summary>
-        /// Returns an array of the <see cref="string"/> knots (optionally also knot + stitch combinations) in the <see cref="Story"/>.
+        /// Returns an array of the <see cref="string"/> knots in the <see cref="Story"/>.
+        /// <para>Note that this method will reset the <see cref="Story"/> in order to test valid knots!</para>
         /// </summary>
-        /// <param name="includeStitches">Set to true to also get stitches, not just knots.</param>
-        public static string[] GetKnots(this Story story, bool includeStitches = false)
+        public static string[] GetKnots(this Story story)
         {
             if (story.mainContentContainer.namedOnlyContent == null)
                 return new string[0];
             var keys = story.mainContentContainer.namedOnlyContent.Keys;
             var output = new List<string>();
             foreach (var knot in keys)
-                if (!knot.Contains(' '))
+            {
+                // Not all knots are legal. (For example functions are also "Knots".)
+                // This block tests whether each purported knot would trigger a StoryException.
+                story.ResetState();
+                story.ChoosePathString(knot);
+                try
                 {
-                    output.Add(knot);
-                    if (includeStitches)
+                    story.Continue();
+                    if (!knot.Contains(' '))
                     {
-                        var container = story.KnotContainerWithName(knot);
-                        foreach (var stitch in container.namedContent.Keys)
-                            output.Add(string.Format("{0}.{1}", knot, stitch));
+                        output.Add(knot);
                     }
                 }
+                catch (StoryException) { }
+            }
+            story.ResetState();
+            return output.ToArray();
+        }
+
+        /// <summary>
+        /// Returns an array of the <see cref="string"/> strings in one of the <see cref="Story"/>'s knots.
+        /// </summary>
+        /// <param name="knot">The <see cref="string"/> name of the knot to get stitches (if any) for.</param>
+        public static string[] GetStitches(this Story story, string knot)
+        {
+            var container = story.KnotContainerWithName(knot);
+            if (container == null)
+                return new string[0];
+            var output = new List<string>();
+            foreach (var stitch in container.namedContent.Keys)
+                output.Add(stitch);
             return output.ToArray();
         }
 

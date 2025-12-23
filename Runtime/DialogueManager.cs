@@ -55,10 +55,16 @@ namespace StephanHooft.Dialogue
         public bool DialogueInProgress { get; private set; }
 
         /// <summary>
-        /// The <see cref="DialogueManager"/>'s current <see cref="string"/> starting node, if any.
+        /// The <see cref="DialogueManager"/>'s current <see cref="string"/> starting knot, if any.
         /// </summary>
         public string StartingKnot
             => dialogueAsset.StartingKnot;
+
+        /// <summary>
+        /// The <see cref="DialogueManager"/>'s current <see cref="string"/> starting stitch, if any.
+        /// </summary>
+        public string StartingStitch
+            => dialogueAsset.StartingStitch;
 
         /// <summary>
         /// The <see cref="DialogueManager"/>'s current <see cref="string"/> text, if any.
@@ -73,7 +79,8 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField] private DialogueAsset dialogueAsset;
+        [SerializeField] 
+        private DialogueAsset dialogueAsset;
 
         [SerializeField]
         [Header("Dialogue Variables (Optional)")]
@@ -87,17 +94,20 @@ namespace StephanHooft.Dialogue
         #endregion
         #region ScriptableObject Implementation
 
-        //private void Awake()
-        //{
-        //    if (TrackingVariables)
-        //        dialogueVariablesAsset.Initialise();
-        //}
+        private void OnEnable()
+        {
+            if (TrackingVariables)
+                dialogueVariablesAsset.Initialise();
+        }
 
-        //private void OnDestroy()
-        //{
-        //    if (TrackingVariables)
-        //        dialogueVariablesAsset.UnInitialise();
-        //}
+        private void OnDisable()
+        {
+            CurrentDialogueLine = new();
+            DialogueInProgress = false;
+            story = null;
+            if (TrackingVariables)
+                dialogueVariablesAsset.UnInitialise();
+        }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Methods
@@ -105,16 +115,17 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// Begin a dialogue.
         /// </summary>
-        /// <param name="startingKnot">
-        /// The <see cref="string"/> name of the knot at which to begin the dialogue.
+        /// <param name="startingKnot">The <see cref="string"/> name of the knot (if any) at which to begin the dialogue.
         /// Leave this empty to start in the default position.
         /// </param>
-        public void StartDialogue(string startingKnot = null)
+        /// <param name="startingStitch">The <see cref="string"/> name of the stitch (if any) at which to begin the dialogue.
+        /// </param>
+        public void StartDialogue(string startingKnot = null, string startingStitch = null)
         {
             Exceptions.ThrowIfNull(dialogueAsset.Text, "dialogueAsset");
             if (DialogueInProgress)
                 StopCurrentStory();
-            StartNewStory(startingKnot);
+            StartNewStory(startingKnot ?? dialogueAsset.StartingKnot, startingStitch ?? dialogueAsset.StartingStitch);
         }
 
         /// <summary>
@@ -122,18 +133,19 @@ namespace StephanHooft.Dialogue
         /// </summary>
         /// <param name="dialogue">The <see cref="DialogueAsset"/> to base the new dialogue on.</param>
         /// <param name="startingKnot">The <see cref="string"/> name of the knot at which to begin the dialogue.
-        /// Leave this empty to start in the position specified by the <see cref="DialogueAsset"/>.</param>
-        public void StartDialogue(DialogueAsset dialogue, string startingKnot = null)
+        /// Leave this empty to start in the position specified by the <see cref="DialogueAsset"/>.
+        /// </param>
+        /// <param name="startingStitch">The <see cref="string"/> name of the stitch at which to begin the dialogue.
+        /// Leave this empty to start in the position specified by the <see cref="DialogueAsset"/>.
+        /// </param>
+        public void StartDialogue(DialogueAsset dialogue, string startingKnot = null, string startingStitch = null)
         {
             Exceptions.ThrowIfNull(dialogue, "dialogue");
             Exceptions.ThrowIfNull(dialogue.Text, "DialogueAsset.Text");
             if (DialogueInProgress)
                 StopCurrentStory();
             dialogueAsset = dialogue;
-            if (startingKnot == null)
-                StartNewStory(dialogueAsset.StartingKnot);
-            else
-                StartNewStory(startingKnot);
+            StartNewStory(startingKnot ?? dialogueAsset.StartingKnot, startingStitch ?? dialogueAsset.StartingStitch);
         }
 
         /// <summary>
@@ -205,21 +217,20 @@ namespace StephanHooft.Dialogue
         //        : throw Exceptions.NotTrackingGlobalVariables;
         //}
 
-        private void JumpToKnot(string knotAddress)
+        private void JumpToKnot(string knotAddress, string stitchAddress)
         {
-            if (knotAddress.Contains("."))
-            {
-                var splitString = knotAddress.Split(".");
-                if (splitString.Length > 2)
-                    throw Exceptions.InvalidKnotFormat(knotAddress);
-                var knot = splitString[0];
-                var stitch = splitString[1];
-                if (!story.ContainsKnot(knot, stitch))
-                    throw Exceptions.KnotPlusStitchDoesNotExist(knot, stitch);
-            }
-            else if (!story.ContainsKnot(knotAddress))
+            if (knotAddress == null || knotAddress == "")
+                return;
+            if (!story.ContainsKnot(knotAddress))
                 throw Exceptions.KnotDoesNotExist(knotAddress);
-            story.ChoosePathString(knotAddress);
+            if(stitchAddress == null || stitchAddress == "")
+                story.ChoosePathString(knotAddress);
+            else
+            {
+                if (!story.ContainsKnot(knotAddress, stitchAddress))
+                    throw Exceptions.KnotPlusStitchDoesNotExist(knotAddress, stitchAddress);
+                story.ChoosePathString($"{knotAddress}.{stitchAddress}");
+            }
         }
 
         private void ProcessNextDialogueLine()
@@ -238,10 +249,10 @@ namespace StephanHooft.Dialogue
             }
         }
 
-        private void StartNewStory(string startingKnot)
+        private void StartNewStory(string startingKnot, string startingStitch)
         {
             story = CreateNewStory(dialogueAsset.Text);
-            if (startingKnot != null && startingKnot != "") JumpToKnot(startingKnot);
+            JumpToKnot(startingKnot, startingStitch);
             if (TrackingVariables)
             {
                 story.variablesState.variableChangedEvent += VariableChanged;

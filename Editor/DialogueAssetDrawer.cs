@@ -14,14 +14,17 @@ namespace StephanHooft.Dialogue.EditorScripts
         {
             var asset = property.FindPropertyRelative("asset");
             var startingKnot = property.FindPropertyRelative("startingKnot");
+            var startingStitch = property.FindPropertyRelative("startingStitch");
 
             label = EditorGUI.BeginProperty(position, label, property);
-            EditorGUI.BeginChangeCheck();
             var bufferedAssetValue = (TextAsset)asset.objectReferenceValue;
             EditorGUI.ObjectField(position, asset, label);
             var newAssetValue = (TextAsset)asset.objectReferenceValue;
             if (bufferedAssetValue != newAssetValue)
+            {
                 startingKnot.stringValue = "";
+                startingStitch.stringValue = "";
+            }
             if (newAssetValue != null)
             {
                 EditorGUI.indentLevel++;
@@ -29,37 +32,55 @@ namespace StephanHooft.Dialogue.EditorScripts
                 {
                     var story = new Story(newAssetValue.text);
                     startingKnot.stringValue = DrawKnotProperty("Starting Knot", startingKnot.stringValue, story);
-                    EditorGUI.indentLevel--;
+                    startingStitch.stringValue = DrawStitchProperty("Starting Stitch", startingStitch.stringValue, startingKnot.stringValue, story);
                 }
                 catch (System.Collections.Generic.KeyNotFoundException)
                 {
                     Debug.LogError("The selected asset is not a valid Ink story.");
                     asset.objectReferenceValue = bufferedAssetValue;
-                    EditorGUI.indentLevel--;
+                    startingKnot.stringValue = "";
+                    startingStitch.stringValue = "";
                     return;
                 }
+                EditorGUI.indentLevel--;
             }
-            if (EditorGUI.EndChangeCheck())
-                property.serializedObject.ApplyModifiedProperties();
             EditorGUI.EndProperty();
         }
 
-        private static string DrawKnotProperty(string label, string value, Story story)
+        private static string DrawKnotProperty(string label, string knotValue, Story story)
         {
             if (!GetKnots(story, out var knots))
                 return "";
-            var options = new string[knots.Length + 1];
+            var knotOptions = new string[knots.Length + 1];
             int selected = 0;
-            options[0] = "- Not set -";
+            knotOptions[0] = "- Not set -";
             for (int i = 0; i < knots.Length; i++)
             {
                 var knot = knots[i];
-                options[i + 1] = knot;
-                if (value == knot)
+                knotOptions[i + 1] = knot;
+                if (knotValue == knot)
                     selected = i + 1;
             }
-            var newSelected = EditorGUILayout.Popup(label, selected, options);
-            return newSelected == 0 ? "" : options[newSelected];
+            var selectedKnotIndex = EditorGUILayout.Popup(label, selected, knotOptions);
+            return selectedKnotIndex > 0 ? knotOptions[selectedKnotIndex] : "";
+        }
+
+        private static string DrawStitchProperty(string label, string stitchValue, string knotValue, Story story)
+        {
+            if (!GetStitches(story, knotValue, out var stitches))
+                return "";
+            var stitchOptions = new string[stitches.Length + 1];
+            int selected = 0;
+            stitchOptions[0] = "- Not set -";
+            for (int i = 0; i < stitches.Length; i++)
+            {
+                var stitch = stitches[i];
+                stitchOptions[i + 1] = stitch;
+                if (stitchValue == stitch)
+                    selected = i + 1;
+            }
+            var selectedStitchIndex = EditorGUILayout.Popup(label, selected, stitchOptions);
+            return selectedStitchIndex > 0 ? stitchOptions[selectedStitchIndex] : "";
         }
 
         private static bool GetKnots(Story story, out string[] knots)
@@ -72,6 +93,18 @@ namespace StephanHooft.Dialogue.EditorScripts
                 return false;
             else
                 return true;
+        }
+
+        private static bool GetStitches(Story story, string knot, out string[] stitches)
+        {
+            stitches = new string[0];
+            if (story == null)
+                return false;
+            stitches = story.GetStitches(knot);
+            if (stitches.Length == 0)
+                return false;
+            //Debug.Log($"Found {stitches.Length} stitches in knot {knot}!");
+            return true;
         }
     }
 }

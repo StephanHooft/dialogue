@@ -25,6 +25,12 @@ namespace StephanHooft.Dialogue
             => startingKnot;
 
         /// <summary>
+        /// A <see cref="string"/> of a stitch (within the starting knot) to jump to when starting a dialogue.
+        /// </summary>
+        public string StartingStitch
+            => startingStitch;
+
+        /// <summary>
         /// The contents of the <see cref="TextAsset"/> encapsulated by the <see cref="DialogueAsset"/>.
         /// </summary>
         public string Text
@@ -35,8 +41,9 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField]private TextAsset asset;
+        [SerializeField] private TextAsset asset;
         [SerializeField] private string startingKnot;
+        [SerializeField] private string startingStitch;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -50,6 +57,7 @@ namespace StephanHooft.Dialogue
         {
             this.asset = asset;
             startingKnot = null;
+            startingStitch = null;
         }
 
         /// <summary>
@@ -61,6 +69,20 @@ namespace StephanHooft.Dialogue
         {
             this.asset = asset;
             this.startingKnot = startingKnot;
+            startingStitch = null;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="DialogueAsset"/>.
+        /// </summary>
+        /// <param name="asset">A <see cref="TextAsset"/>.</param>
+        /// <param name="startingKnot">Address of a knot in the text asset to start from.</param>
+        /// <param name="startingStitch">Address of a stitch in the text asset to start from.</param>
+        public DialogueAsset(TextAsset asset, string startingKnot, string startingStitch)
+        {
+            this.asset = asset;
+            this.startingKnot = startingKnot;
+            this.startingStitch = startingStitch;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
