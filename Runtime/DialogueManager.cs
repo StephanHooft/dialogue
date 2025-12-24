@@ -236,16 +236,16 @@ namespace StephanHooft.Dialogue
         private void ProcessNextDialogueLine()
         {
             var text = story.Continue();
-            var tags = story.GetDialogueTags();
+            var tags = story.GetLineTags();
             var choices = story.GetDialogueChoices();
             var cue = story.GetDialogueCue();
             CurrentDialogueLine = new DialogueLine(text, tags, choices, cue);
             OnDialogueLine?.Invoke(this, CurrentDialogueLine);
             if (debug)
             {
-                Debug.Log($"{this.name} || {CurrentDialogueLine}");
+                Debug.Log($"{name} | {CurrentDialogueLine}");
                 foreach (var choice in choices)
-                    Debug.Log(choice);
+                    Debug.Log($"{name} | {choice}");
             }
         }
 
@@ -259,8 +259,10 @@ namespace StephanHooft.Dialogue
                 dialogueVariablesAsset.StartListening(story);
             }
             OnDialogueStart?.Invoke(this);
+            var globalTags = story.GetGlobalTags();
             if (debug)
-                Debug.Log($"{this.name} || Starting dialogue: {dialogueAsset.Name}.");
+                Debug.Log($"{name} | Starting dialogue: {dialogueAsset.Name}" +
+                    $"{(globalTags.Length > 0 ? $"\nGlobal Tags ({globalTags.Length}): [{string.Join("; ", globalTags)}]" : "")}");
             DialogueInProgress = true;
             ProcessNextDialogueLine();
         }
@@ -276,7 +278,7 @@ namespace StephanHooft.Dialogue
             }
             OnDialogueEnd?.Invoke(this);
             if (debug)
-                Debug.Log($"{this.name} || Stopping dialogue: {dialogueAsset.Name}.");
+                Debug.Log($"{name} | Stopping dialogue: {dialogueAsset.Name}\n");
             DialogueInProgress = false;
         }
 
@@ -284,7 +286,7 @@ namespace StephanHooft.Dialogue
         {
             OnVariableChanged?.Invoke(this, name, value);
             if (debug)
-                Debug.Log($"{this.name} || Dialogue variable {name} changed to: {value}.");
+                Debug.Log($"{this.name} | Dialogue variable {name} changed to: {value}.");
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

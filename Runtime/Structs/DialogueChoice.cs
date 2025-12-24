@@ -51,7 +51,8 @@ namespace StephanHooft.Dialogue
         #region Methods
         public override string ToString()
         {
-            return $"Dialogue choice {index}: {text}\n{(tags.Length > 0 ? $"|| Tags: {string.Join(", ", tags)}" : "")}";
+            return $"DialogueChoice {index}: {text}" +
+                $"\n{(tags.Length > 0 ? $"Choice tags ({tags.Length}): {string.Join("; ", tags)}" : "")}";
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

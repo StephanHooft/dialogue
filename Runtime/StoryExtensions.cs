@@ -77,23 +77,45 @@ namespace StephanHooft.Dialogue
         }
 
         /// <summary>
-        /// Returns an array of <see cref="string"/> dialogue tags for the <see cref="Story"/>'s current state.
-        /// </summary>
-        public static string[] GetDialogueTags(this Story story)
-        {
-            if (story.currentTags == null || story.currentTags.Count == 0)
-                return new string[0];
-            return TagListToArray(story.currentTags);
-        }
-
-        /// <summary>
         /// Returns an array of <see cref="string"/> tags for a dialogue <see cref="Choice"/>.
         /// </summary>
         public static string[] GetChoiceTags(this Choice choice)
         {
             if (choice.tags == null || choice.tags.Count == 0)
                 return new string[0];
-            return TagListToArray(choice.tags);
+            return choice.tags.ToArray();
+        }
+
+        /// <summary>
+        /// Returns the <see cref="Story"/>'s global <see cref="string"/> tags.
+        /// </summary>
+        public static string[] GetGlobalTags(this Story story)
+        {
+            return story.globalTags.ToArray();
+        }
+
+        /// <summary>
+        /// Returns an array of <see cref="string"/> tags for a specific knot in the <see cref="Story"/>.
+        /// </summary>
+        /// <param name="knot">The <see cref="string"/> name of the knot to get tags (if any) for.</param>
+        public static string[] GetKnotTags(this Story story, string knot)
+        {
+            if (knot == null || knot == "" || !story.ContainsKnot(knot))
+                return new string[0];
+            var tags = story.TagsForContentAtPath(knot);
+            if (tags == null)
+                return new string[0];
+            return story.TagsForContentAtPath(knot).ToArray();
+        }
+
+        /// <summary>
+        /// Returns an array of <see cref="string"/> dialogue tags for the <see cref="Story"/>'s current state.
+        /// </summary>
+        public static string[] GetLineTags(this Story story)
+        {
+            if (story.currentTags == null || story.currentTags.Count == 0)
+                return new string[0];
+            return story.currentTags.ToArray();
         }
 
         /// <summary>
@@ -139,17 +161,6 @@ namespace StephanHooft.Dialogue
             foreach (var stitch in container.namedContent.Keys)
                 output.Add(stitch);
             return output.ToArray();
-        }
-
-        private static string[] TagListToArray(List<string> list)
-        {
-            var tagCount = list.Count;
-            var tags = new string[tagCount];
-            for (int i = 0; i < tagCount; i++)
-            {
-                tags[i] = list[i].Trim();
-            }
-            return tags;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

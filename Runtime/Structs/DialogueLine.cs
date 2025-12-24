@@ -60,7 +60,8 @@ namespace StephanHooft.Dialogue
 
         public override string ToString()
         {
-            return $"Dialogue line: {text}|| {(tags.Length > 0 ? $"Tags: {string.Join(", ", tags)} || " : "")} Cue: {cue} ||";
+            return $"DialogueLine: {text}Cue: {cue}" +
+                $"{(tags.Length > 0 ? $" || Line tags ({tags.Length}): [{string.Join("; ", tags)}]" : "")}";
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
