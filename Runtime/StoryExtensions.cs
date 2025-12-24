@@ -91,7 +91,11 @@ namespace StephanHooft.Dialogue
         /// </summary>
         public static string[] GetGlobalTags(this Story story)
         {
-            return story.globalTags.ToArray();
+            var tags = story.globalTags;
+            if (tags == null)
+                return new string[0];
+            else
+                return tags.ToArray();
         }
 
         /// <summary>
