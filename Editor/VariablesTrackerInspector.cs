@@ -9,6 +9,8 @@ namespace StephanHooft.Dialogue.EditorScripts
         #region Fields
         private SerializedProperty variablesAsset;
         private SerializedProperty debugMode;
+        private SerializedProperty saveData;
+        private SerializedProperty storeSavedDataInTracker;
         private VariablesTracker variablesTracker;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,13 +21,13 @@ namespace StephanHooft.Dialogue.EditorScripts
         {
             variablesAsset = serializedObject.FindProperty("variablesAsset");
             debugMode = serializedObject.FindProperty("debugMode");
+            saveData = serializedObject.FindProperty("saveData");
+            storeSavedDataInTracker = serializedObject.FindProperty("storeSavedDataInTracker");
             variablesTracker = serializedObject.targetObject as VariablesTracker;
         }
 
         public override void OnInspectorGUI()
         {
-            //if (!Application.isPlaying && variablesTracker.Initialised)
-            //    variablesTracker.ResetVariables();
             serializedObject.Update();
             if (!Application.isPlaying)
             {
@@ -40,17 +42,29 @@ namespace StephanHooft.Dialogue.EditorScripts
                         variablesAsset.objectReferenceValue = bufferedAsset;
                     }
                 }
-                EditorGUILayout.Separator();
             }
+            EditorGUILayout.PropertyField(storeSavedDataInTracker);
+            if(!storeSavedDataInTracker.boolValue && !Application.isPlaying && saveData.stringValue.Length > 0)
+            {
+                saveData.stringValue = null;
+                Debug.Log($"{variablesTracker.name}'s save data was removed.");
+            }
+            EditorGUILayout.Separator();
             EditorGUILayout.PropertyField(debugMode);
             serializedObject.ApplyModifiedProperties();
             DrawDivider();
-            if (!variablesTracker.Tracking)
+            if (Application.isPlaying && !variablesTracker.Tracking)
             {
-                if (GUILayout.Button("Save Variables")) { }
-                if (GUILayout.Button("Load Variables")) { }
-                EditorGUILayout.Separator();
-                if (GUILayout.Button("Reset Variable Defaults")) { }
+                if (storeSavedDataInTracker.boolValue)
+                {
+                    if (GUILayout.Button("Save Variables"))
+                        variablesTracker.SaveVariables();
+                    if (GUILayout.Button("Load Variables"))
+                        variablesTracker.LoadVariables();
+                    EditorGUILayout.Separator();
+                }
+                if (GUILayout.Button("Reset Variables"))
+                    variablesTracker.ResetVariables();
             }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

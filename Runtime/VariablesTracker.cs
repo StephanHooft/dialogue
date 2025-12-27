@@ -79,7 +79,8 @@ namespace StephanHooft.Dialogue
 
         [SerializeField] private TextAsset variablesAsset;
         [SerializeField] private DebugMode debugMode = DebugMode.None;
-        [SerializeField] private string saveData;
+        [SerializeField] private string saveData = null;
+        [SerializeField] private bool storeSavedDataInTracker;
 
         private Dictionary<string, Value> variables = null;
         private DialogueManager trackedManager;
@@ -108,6 +109,65 @@ namespace StephanHooft.Dialogue
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
         #region Methods
+
+        /// <summary>
+        /// Load a variables state from a JSON <see cref="string"/>, or from the <see cref="VariablesTracker"/>'s
+        /// internal storage.
+        /// </summary>
+        /// <param name="json">A <see cref="string"/> to read from. Leave <see cref="null"/> to load the
+        /// <see cref="<see cref="VariablesTracker"/>'s internal storage, if any."/></param>
+        public void LoadVariables(string json = null)
+        {
+            if (!Initialised)
+                throw new System.InvalidOperationException();
+            if (Tracking)
+                trackedManager.StopDialogue();
+            var loadSource = json ?? saveData;
+            if (loadSource != null && loadSource.Length > 0)
+            {
+                var state = DialogueVariablesState.FromJSON(json ?? saveData);
+                variables = state.ExportToDictionary();
+                if (debugMode.Full())
+                    Debug.Log($"{name} | Loaded variables.\n{json}");
+            }
+            else if (debugMode.Full())
+                Debug.Log($"{name} | No data to load.");
+        }
+
+        /// <summary>
+        /// Reset tracked variables to their default values.
+        /// </summary>
+        public void ResetVariables()
+        {
+            if (!Initialised)
+                return;
+            if (Tracking)
+                trackedManager.StopDialogue();
+            if (variablesAsset != null)
+                InitialiseVariables(variablesAsset);
+            if (debugMode.Full())
+                Debug.Log($"{name} | Variables reset.\n");
+        }
+
+        /// <summary>
+        /// Save the current variables state to a JSON <see cref="string"/>.
+        /// </summary>
+        public string SaveVariables()
+        {
+            if (!Initialised)
+                throw new System.InvalidOperationException();
+            if (Tracking)
+                trackedManager.StopDialogue();
+            var state = new DialogueVariablesState(variables);
+            var data = state.ToJSON();
+            if (storeSavedDataInTracker)
+            {
+                saveData = data;
+                if (debugMode.Full())
+                    Debug.Log($"{name} | Saved variables.\n{saveData}");
+            }
+            return data;
+        }
 
         /// <summary>
         /// Change the <see cref="TextAsset"/> that specifies which variables the <see cref="VariablesTracker"/>
@@ -140,7 +200,7 @@ namespace StephanHooft.Dialogue
             trackedManager = manager;
             OnTrackingStart?.Invoke(this);
             if (debugMode.Full())
-                Debug.Log($"{name} | Started tracking {manager.name}\n");
+                Debug.Log($"{name} | Started tracking {manager.name}.\n");
             return true;
         }
 
@@ -154,7 +214,7 @@ namespace StephanHooft.Dialogue
                 trackedManager.OnVariableChanged -= VariableChanged;
                 OnTrackingEnd?.Invoke(this);
                 if (debugMode.Full())
-                    Debug.Log($"{name} | Stopped tracking {trackedManager.name}\n");
+                    Debug.Log($"{name} | Stopped tracking {trackedManager.name}.\n");
             }
             trackedManager = null;
         }
@@ -200,7 +260,7 @@ namespace StephanHooft.Dialogue
                         $"does not match type {variables[name].valueType}.");
                 variables[name] = value;
                 if (!debugMode.None())
-                    Debug.Log($"{this.name} | {value.valueType} variable [{name}] changed to: [{value}]\n");
+                    Debug.Log($"{this.name} | {value.valueType} variable [{name}] changed to: [{value}].\n");
             }
             else if(!debugMode.None())
                 Debug.LogWarning($"{name} | Observed change to unknown variable {name}.");

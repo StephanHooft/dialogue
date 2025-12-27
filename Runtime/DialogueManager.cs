@@ -255,7 +255,7 @@ namespace StephanHooft.Dialogue
             CurrentDialogueLine = new();
             OnDialogueEnd?.Invoke(this);
             if (debugMode.Full())
-                Debug.Log($"{name} | Stopping dialogue: {dialogueAsset.Name}\n");
+                Debug.Log($"{name} | Stopping dialogue: {dialogueAsset.Name}.\n");
             DialogueInProgress = false;
         }
 
@@ -289,9 +289,12 @@ namespace StephanHooft.Dialogue
             if (variablesAsset.StartTracking(manager))
                 foreach (System.Collections.Generic.KeyValuePair<string, Value> kvp in variablesAsset)
                 {
-                    var currentValue = story.variablesState.GetVariableWithName(kvp.Key) as Value;
-                    if (kvp.Value.valueType == currentValue.valueType)
-                        story.variablesState.SetGlobal(kvp.Key, kvp.Value);
+                    if (story.variablesState.GlobalVariableExistsWithName(kvp.Key))
+                    {
+                        var currentValue = story.variablesState.GetVariableWithName(kvp.Key) as Value;
+                        if (kvp.Value.valueType == currentValue.valueType)
+                            story.variablesState.SetGlobal(kvp.Key, kvp.Value);
+                    }
                 }
             else if (debug)
                 Debug.LogWarning($"{manager.name} | {variablesAsset.name} did not start tracking variables.");
