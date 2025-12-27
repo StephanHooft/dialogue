@@ -129,292 +129,289 @@ namespace StephanHooft.Dialogue
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
-        #region Classes
+    }
+
+    /// <summary>
+    /// A serializable data object representing an <see cref="BoolValue"/> and its name.
+    /// </summary>
+    [Serializable]
+    public class BoolVariable
+    {
+        /// <summary>
+        /// The <see cref="BoolVariable"/>'s <see cref="string"/> name.
+        /// </summary>
+        public string name;
 
         /// <summary>
-        /// A serializable data object representing an <see cref="BoolValue"/> and its name.
+        /// A the <see cref="bool"/> value.
         /// </summary>
-        [Serializable]
-        public class BoolVariable
-        {
-            /// <summary>
-            /// The <see cref="BoolVariable"/>'s <see cref="string"/> name.
-            /// </summary>
-            public string name;
-
-            /// <summary>
-            /// A the <see cref="bool"/> value.
-            /// </summary>
-            public bool value;
-
-            /// <summary>
-            /// Converts from a (<see cref="string"/>, <see cref="BoolValue"/>) tuple 
-            /// to a <see cref="BoolVariable"/>.
-            /// </summary>
-            public static implicit operator BoolVariable((string name, BoolValue value) tuple)
-                => new() { name = tuple.name, value = tuple.value.value };
-
-            /// <summary>
-            /// Converts from a <see cref="BoolVariable"/> to a <see cref="BoolValue"/>,
-            /// losing the <see cref="BoolVariable"/>'s name in the process.
-            /// </summary>
-            public static implicit operator BoolValue(BoolVariable boolVariable)
-                => new(boolVariable.value);
-        }
+        public bool value;
 
         /// <summary>
-        /// A serializable data object representing an <see cref="IntValue"/> and its name.
+        /// Converts from a (<see cref="string"/>, <see cref="BoolValue"/>) tuple 
+        /// to a <see cref="BoolVariable"/>.
         /// </summary>
-        [Serializable]
-        public class IntVariable
-        {
-            /// <summary>
-            /// The <see cref="IntVariable"/>'s <see cref="string"/> name.
-            /// </summary>
-            public string name;
-
-            /// <summary>
-            /// A the <see cref="int"/> value.
-            /// </summary>
-            public int value;
-
-            /// <summary>
-            /// Converts from a (<see cref="string"/>, <see cref="IntValue"/>) tuple 
-            /// to a <see cref="IntVariable"/>.
-            /// </summary>
-            public static implicit operator IntVariable((string name, IntValue value) tuple)
-                => new() { name = tuple.name, value = tuple.value.value };
-
-            /// <summary>
-            /// Converts from a <see cref="IntVariable"/> to a <see cref="IntValue"/>,
-            /// losing the <see cref="IntVariable"/>'s name in the process.
-            /// </summary>
-            public static implicit operator IntValue(IntVariable intVariable)
-                => new(intVariable.value);
-        }
+        public static implicit operator BoolVariable((string name, BoolValue value) tuple)
+            => new() { name = tuple.name, value = tuple.value.value };
 
         /// <summary>
-        /// A serializable data object representing an <see cref="FloatValue"/> and its name.
+        /// Converts from a <see cref="BoolVariable"/> to a <see cref="BoolValue"/>,
+        /// losing the <see cref="BoolVariable"/>'s name in the process.
         /// </summary>
-        [Serializable]
-        public class FloatVariable
-        {
-            /// <summary>
-            /// The <see cref="FloatVariable"/>'s <see cref="string"/> name.
-            /// </summary>
-            public string name;
+        public static implicit operator BoolValue(BoolVariable boolVariable)
+            => new(boolVariable.value);
+    }
 
-            /// <summary>
-            /// A the <see cref="float"/> value.
-            /// </summary>
-            public float value;
-
-            /// <summary>
-            /// Converts from a (<see cref="string"/>, <see cref="FloatValue"/>) tuple 
-            /// to a <see cref="FloatVariable"/>.
-            /// </summary>
-            public static implicit operator FloatVariable((string name, FloatValue value) tuple)
-                => new() { name = tuple.name, value = tuple.value.value };
-
-            /// <summary>
-            /// Converts from a <see cref="FloatVariable"/> to a <see cref="FloatValue"/>,
-            /// losing the <see cref="FloatVariable"/>'s name in the process.
-            /// </summary>
-            public static implicit operator FloatValue(FloatVariable floatVariable)
-                => new(floatVariable.value);
-        }
+    /// <summary>
+    /// A serializable data object representing an <see cref="IntValue"/> and its name.
+    /// </summary>
+    [Serializable]
+    public class IntVariable
+    {
+        /// <summary>
+        /// The <see cref="IntVariable"/>'s <see cref="string"/> name.
+        /// </summary>
+        public string name;
 
         /// <summary>
-        /// A serializable data object representing an <see cref="FloatValue"/> and its name.
+        /// A the <see cref="int"/> value.
         /// </summary>
-        [Serializable]
-        public class StringVariable
-        {
-            /// <summary>
-            /// The <see cref="StringVariable"/>'s <see cref="string"/> name.
-            /// </summary>
-            public string name;
-
-            /// <summary>
-            /// A the <see cref="string"/> value.
-            /// </summary>
-            public string value;
-
-            /// <summary>
-            /// Converts from a (<see cref="string"/>, <see cref="StringValue"/>) tuple 
-            /// to a <see cref="StringVariable"/>.
-            /// </summary>
-            public static implicit operator StringVariable((string name, StringValue value) tuple)
-                => new() { name = tuple.name, value = tuple.value.value };
-
-            /// <summary>
-            /// Converts from a <see cref="StringVariable"/> to a <see cref="StringValue"/>,
-            /// losing the <see cref="StringVariable"/>'s name in the process.
-            /// </summary>
-            public static implicit operator StringValue(StringVariable stringVariable)
-                => new(stringVariable.value);
-        }
+        public int value;
 
         /// <summary>
-        /// A serializable data object representing an <see cref="InkList"/> and its name.
+        /// Converts from a (<see cref="string"/>, <see cref="IntValue"/>) tuple 
+        /// to a <see cref="IntVariable"/>.
+        /// </summary>
+        public static implicit operator IntVariable((string name, IntValue value) tuple)
+            => new() { name = tuple.name, value = tuple.value.value };
+
+        /// <summary>
+        /// Converts from a <see cref="IntVariable"/> to a <see cref="IntValue"/>,
+        /// losing the <see cref="IntVariable"/>'s name in the process.
+        /// </summary>
+        public static implicit operator IntValue(IntVariable intVariable)
+            => new(intVariable.value);
+    }
+
+    /// <summary>
+    /// A serializable data object representing an <see cref="FloatValue"/> and its name.
+    /// </summary>
+    [Serializable]
+    public class FloatVariable
+    {
+        /// <summary>
+        /// The <see cref="FloatVariable"/>'s <see cref="string"/> name.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// A the <see cref="float"/> value.
+        /// </summary>
+        public float value;
+
+        /// <summary>
+        /// Converts from a (<see cref="string"/>, <see cref="FloatValue"/>) tuple 
+        /// to a <see cref="FloatVariable"/>.
+        /// </summary>
+        public static implicit operator FloatVariable((string name, FloatValue value) tuple)
+            => new() { name = tuple.name, value = tuple.value.value };
+
+        /// <summary>
+        /// Converts from a <see cref="FloatVariable"/> to a <see cref="FloatValue"/>,
+        /// losing the <see cref="FloatVariable"/>'s name in the process.
+        /// </summary>
+        public static implicit operator FloatValue(FloatVariable floatVariable)
+            => new(floatVariable.value);
+    }
+
+    /// <summary>
+    /// A serializable data object representing an <see cref="FloatValue"/> and its name.
+    /// </summary>
+    [Serializable]
+    public class StringVariable
+    {
+        /// <summary>
+        /// The <see cref="StringVariable"/>'s <see cref="string"/> name.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// A the <see cref="string"/> value.
+        /// </summary>
+        public string value;
+
+        /// <summary>
+        /// Converts from a (<see cref="string"/>, <see cref="StringValue"/>) tuple 
+        /// to a <see cref="StringVariable"/>.
+        /// </summary>
+        public static implicit operator StringVariable((string name, StringValue value) tuple)
+            => new() { name = tuple.name, value = tuple.value.value };
+
+        /// <summary>
+        /// Converts from a <see cref="StringVariable"/> to a <see cref="StringValue"/>,
+        /// losing the <see cref="StringVariable"/>'s name in the process.
+        /// </summary>
+        public static implicit operator StringValue(StringVariable stringVariable)
+            => new(stringVariable.value);
+    }
+
+    /// <summary>
+    /// A serializable data object representing an <see cref="InkList"/> and its name.
+    /// </summary>
+    [Serializable]
+    public class ListVariable
+    {
+        /// <summary>
+        /// The <see cref="ListVariable"/>'s <see cref="string"/> name.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// A the <see cref="InkList"/> value.
+        /// </summary>
+        public InkList value;
+
+        /// <summary>
+        /// Converts from a (<see cref="string"/>, <see cref="ListValue"/>) tuple 
+        /// to a <see cref="ListVariable"/>.
+        /// </summary>
+        public static implicit operator ListVariable((string name, ListValue value) tuple)
+            => new() { name = tuple.name, value = tuple.value.value };
+
+        /// <summary>
+        /// Converts from a <see cref="ListVariable"/> to a <see cref="ListValue"/>,
+        /// losing the <see cref="ListVariable"/>'s name in the process.
+        /// </summary>
+        public static implicit operator ListValue(ListVariable listVariable)
+            => new(listVariable.value);
+
+        /// <summary>
+        /// A serialisable version of a <see cref="Ink.Runtime.InkList"/>.
+        /// <para>
+        /// Contains <see cref="InkListItem"/>s and <see cref="InkListDefinition"/>s for said items' origins.
+        /// </para>
         /// </summary>
         [Serializable]
-        public class ListVariable
+        public class InkList
         {
             /// <summary>
-            /// The <see cref="ListVariable"/>'s <see cref="string"/> name.
+            /// The <see cref="InkList"/>'s <see cref="InkListItem"/>s.
             /// </summary>
-            public string name;
+            public List<(InkListItem key, int value)> items;
 
             /// <summary>
-            /// A the <see cref="InkList"/> value.
+            /// The <see cref="InkList"/>'s origin <see cref="InkListDefinition"/>s.
             /// </summary>
-            public InkList value;
+            public List<InkListDefinition> origins;
 
             /// <summary>
-            /// Converts from a (<see cref="string"/>, <see cref="ListValue"/>) tuple 
-            /// to a <see cref="ListVariable"/>.
+            /// Converts an <see cref="Ink.Runtime.InkList"/> into an <see cref="InkList"/>.
             /// </summary>
-            public static implicit operator ListVariable((string name, ListValue value) tuple)
-                => new() { name = tuple.name, value = tuple.value.value };
+            public static implicit operator InkList(Ink.Runtime.InkList list)
+            {
+                var output = new InkList { items = new(), origins = null };
+                foreach (var itemAndValue in list)
+                    output.items.Add((itemAndValue.Key, itemAndValue.Value));
+                if (list.origins != null)
+                {
+                    output.origins = new();
+                    foreach (var origin in list.origins)
+                        output.origins.Add(origin);
+                }
+                return output;
+            }
 
             /// <summary>
-            /// Converts from a <see cref="ListVariable"/> to a <see cref="ListValue"/>,
-            /// losing the <see cref="ListVariable"/>'s name in the process.
+            /// Converts an <see cref="InkList"/> into an <see cref="Ink.Runtime.InkList"/>.
             /// </summary>
-            public static implicit operator ListValue(ListVariable listVariable)
-                => new(listVariable.value);
+            /// <param name="list"></param>
+            public static implicit operator Ink.Runtime.InkList(InkList list)
+            {
+                Ink.Runtime.InkList inkList = new();
+                if (list.origins != null)
+                {
+                    inkList.origins = new();
+                    foreach (var origin in list.origins)
+                        inkList.origins.Add(origin);
+                }
+                if (list.items != null)
+                    foreach (var item in list.items)
+                        inkList.AddItem(item.key);
+                return inkList;
+            }
 
             /// <summary>
-            /// A serialisable version of a <see cref="Ink.Runtime.InkList"/>.
-            /// <para>
-            /// Contains <see cref="InkListItem"/>s and <see cref="InkListDefinition"/>s for said items' origins.
-            /// </para>
+            /// A serialisable version of a <see cref="Ink.Runtime.InkListItem"/>.
             /// </summary>
             [Serializable]
-            public class InkList
+            public struct InkListItem
             {
                 /// <summary>
-                /// The <see cref="InkList"/>'s <see cref="InkListItem"/>s.
+                /// The name of the <see cref="InkListItem"/>'s list origin.
                 /// </summary>
-                public List<(InkListItem key, int value)> items;
+                public string originName;
 
                 /// <summary>
-                /// The <see cref="InkList"/>'s origin <see cref="InkListDefinition"/>s.
+                /// The <see cref="InkListItem"/>'s name.
                 /// </summary>
-                public List<InkListDefinition> origins;
+                public string itemName;
 
                 /// <summary>
-                /// Converts an <see cref="Ink.Runtime.InkList"/> into an <see cref="InkList"/>.
+                /// Converts an <see cref="Ink.Runtime.InkListItem"/> into an <see cref="InkListItem"/>.
                 /// </summary>
-                public static implicit operator InkList(Ink.Runtime.InkList list)
+                public static implicit operator InkListItem(Ink.Runtime.InkListItem item)
+                    => new() { originName = item.originName, itemName = item.itemName };
+
+                /// <summary>
+                /// Converts an <see cref="InkListItem"/> into an <see cref="Ink.Runtime.InkListItem"/>.
+                /// </summary>
+                public static implicit operator Ink.Runtime.InkListItem(InkListItem item)
+                    => new(item.originName, item.itemName);
+            }
+
+            /// <summary>
+            /// A serialisable version of a <see cref="ListDefinition"/>.
+            /// </summary>
+            [Serializable]
+            public class InkListDefinition
+            {
+                /// <summary>
+                /// The <see cref="InkListDefinition"/>'s name.
+                /// </summary>
+                public string listName;
+
+                /// <summary>
+                /// The <see cref="InkListDefinition"/>'s <see cref="InkListItem"/>s.
+                /// </summary>
+                public List<(InkListItem listItem, int value)> items;
+
+                /// <summary>
+                /// Converts a <see cref="ListDefinition"/> into an <see cref="InkListDefinition"/>.
+                /// </summary>
+                public static implicit operator InkListDefinition(ListDefinition definition)
                 {
-                    var output = new InkList { items = new(), origins = null };
-                    foreach (var itemAndValue in list)
-                        output.items.Add((itemAndValue.Key, itemAndValue.Value));
-                    if (list.origins != null)
-                    {
-                        output.origins = new();
-                        foreach (var origin in list.origins)
-                            output.origins.Add(origin);
-                    }
-                    return output;
+                    var items = new List<(InkListItem name, int value)>();
+                    foreach (var item in definition.items)
+                        items.Add((item.Key, item.Value));
+                    return new() { listName = definition.name, items = items };
                 }
 
                 /// <summary>
-                /// Converts an <see cref="InkList"/> into an <see cref="Ink.Runtime.InkList"/>.
+                /// Converts an <see cref="InkListDefinition"/> into a <see cref="ListDefinition"/>.
                 /// </summary>
-                /// <param name="list"></param>
-                public static implicit operator Ink.Runtime.InkList(InkList list)
+                public static implicit operator ListDefinition(InkListDefinition definition)
                 {
-                    Ink.Runtime.InkList inkList = new();
-                    if(list.origins != null)
-                    {
-                        inkList.origins = new();
-                        foreach (var origin in list.origins)
-                            inkList.origins.Add(origin);
-                    }
-                    if(list.items != null)
-                        foreach(var item in list.items)
-                            inkList.AddItem(item.key);
-                    return inkList;
-                }
-
-                /// <summary>
-                /// A serialisable version of a <see cref="Ink.Runtime.InkListItem"/>.
-                /// </summary>
-                [Serializable]
-                public struct InkListItem
-                {
-                    /// <summary>
-                    /// The name of the <see cref="InkListItem"/>'s list origin.
-                    /// </summary>
-                    public string originName;
-
-                    /// <summary>
-                    /// The <see cref="InkListItem"/>'s name.
-                    /// </summary>
-                    public string itemName;
-
-                    /// <summary>
-                    /// Converts an <see cref="Ink.Runtime.InkListItem"/> into an <see cref="InkListItem"/>.
-                    /// </summary>
-                    public static implicit operator InkListItem(Ink.Runtime.InkListItem item)
-                        => new() { originName = item.originName, itemName = item.itemName };
-
-                    /// <summary>
-                    /// Converts an <see cref="InkListItem"/> into an <see cref="Ink.Runtime.InkListItem"/>.
-                    /// </summary>
-                    public static implicit operator Ink.Runtime.InkListItem(InkListItem item)
-                        => new(item.originName, item.itemName);
-                }
-
-                /// <summary>
-                /// A serialisable version of a <see cref="ListDefinition"/>.
-                /// </summary>
-                [Serializable]
-                public class InkListDefinition
-                {
-                    /// <summary>
-                    /// The <see cref="InkListDefinition"/>'s name.
-                    /// </summary>
-                    public string listName;
-
-                    /// <summary>
-                    /// The <see cref="InkListDefinition"/>'s <see cref="InkListItem"/>s.
-                    /// </summary>
-                    public List<(InkListItem listItem, int value)> items;
-
-                    /// <summary>
-                    /// Converts a <see cref="ListDefinition"/> into an <see cref="InkListDefinition"/>.
-                    /// </summary>
-                    public static implicit operator InkListDefinition(ListDefinition definition)
-                    {
-                        var items = new List<(InkListItem name, int value)>();
-                        foreach (var item in definition.items)
-                            items.Add((item.Key, item.Value));
-                        return new() { listName = definition.name, items = items };
-                    }
-
-                    /// <summary>
-                    /// Converts an <see cref="InkListDefinition"/> into a <see cref="ListDefinition"/>.
-                    /// </summary>
-                    public static implicit operator ListDefinition(InkListDefinition definition)
-                    {
-                        var items = new Dictionary<string, int>();
-                        if (definition.items == null)
-                            return new(null, items);
-                        var name = definition.items.Count > 0 
-                            ? definition.items[0].listItem.originName 
-                            : null;
-                        foreach (var item in definition.items)
-                            items.Add(item.listItem.itemName, item.value);
-                        return new(name, items);
-                    }
+                    var items = new Dictionary<string, int>();
+                    if (definition.items == null)
+                        return new(null, items);
+                    var name = definition.items.Count > 0
+                        ? definition.items[0].listItem.originName
+                        : null;
+                    foreach (var item in definition.items)
+                        items.Add(item.listItem.itemName, item.value);
+                    return new(name, items);
                 }
             }
         }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        #endregion
     }
 }
