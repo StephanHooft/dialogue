@@ -26,4 +26,31 @@ namespace StephanHooft.Dialogue
         /// </summary>
         EndReached,
     }
+
+    public static class DialogueCueExtensions
+    {
+        /// <summary>
+        /// Returns <see cref="true"/> if the <see cref="DialogueCue"/> has value <see cref="DialogueCue.CanContinue"/>.
+        /// </summary>
+        public static bool CanContinue(this DialogueCue dialogueCue)
+            => dialogueCue == DialogueCue.CanContinue;
+
+        /// <summary>
+        /// Returns <see cref="true"/> if the <see cref="DialogueCue"/> has value <see cref="DialogueCue.Choice"/>.
+        /// </summary>
+        public static bool Choice(this DialogueCue dialogueCue)
+            => dialogueCue == DialogueCue.Choice;
+
+        /// <summary>
+        /// Returns <see cref="true"/> if the <see cref="DialogueCue"/> has value <see cref="DialogueCue.EndReached"/>.
+        /// </summary>
+        public static bool EndReached(this DialogueCue dialogueCue)
+            => dialogueCue == DialogueCue.EndReached;
+
+        /// <summary>
+        /// Returns <see cref="true"/> if the <see cref="DialogueCue"/> has value <see cref="DialogueCue.None"/>.
+        /// </summary>
+        public static bool None(this DialogueCue dialogueCue)
+            => dialogueCue == DialogueCue.None;
+    }
 }
