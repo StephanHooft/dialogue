@@ -24,19 +24,19 @@ namespace StephanHooft.Dialogue
     public static class DebugModeExtensions
     {
         /// <summary>
-        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value "Full".
+        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value <see cref="DebugMode.Full"/>.
         /// </summary>
         public static bool Full(this DebugMode debugMode)
             => debugMode == DebugMode.Full;
 
         /// <summary>
-        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value "Minimal".
+        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value <see cref="DebugMode.Minimal"/>.
         /// </summary>
         public static bool Minimal(this DebugMode debugMode)
             => debugMode == DebugMode.Minimal;
 
         /// <summary>
-        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value "None".
+        /// Returns <see cref="true"/> if the <see cref="DebugMode"/> has value <see cref="DebugMode.None"/>.
         /// </summary>
         public static bool None(this DebugMode debugMode)
             => debugMode == DebugMode.None;
