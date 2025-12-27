@@ -1,12 +1,13 @@
 using Ink.Runtime;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace StephanHooft.Dialogue
 {
     /// <summary>
-    /// Extension methods for <see cref="Story"/>.
+    /// Extension methods for <see cref="Story"/>, <see cref="Choice"/>, and <see cref="TextAsset"/>.
     /// </summary>
-    public static class StoryExtensions
+    public static class DialogueExtensions
     {
         #region Static Methods
 
@@ -134,8 +135,8 @@ namespace StephanHooft.Dialogue
             var output = new List<string>();
             foreach (var knot in keys)
             {
-                // Not all knots are legal. (For example functions are also "Knots".)
-                // This block tests whether each purported knot would trigger a StoryException.
+                // Not all knots are legal. (Functions are also "Knots", and some knots require parameters.)
+                // This block tests whether each purported knot would trigger an Exception of some sort.
                 story.ResetState();
                 story.ChoosePathString(knot);
                 try
@@ -146,7 +147,7 @@ namespace StephanHooft.Dialogue
                         output.Add(knot);
                     }
                 }
-                catch (StoryException) { }
+                catch (System.Exception) { }
             }
             story.ResetState();
             return output.ToArray();
@@ -165,6 +166,24 @@ namespace StephanHooft.Dialogue
             foreach (var stitch in container.namedContent.Keys)
                 output.Add(stitch);
             return output.ToArray();
+        }
+
+        /// <summary>
+        /// Returns <see cref="true"/> if the <see cref="TextAsset"/> can create a valid <see cref="Story"/>.
+        /// </summary>
+        /// <param name="story">A <see cref="Story"/> based on the provided <paramref name="asset"/>.</param>
+        public static bool IsValidInkStory(this TextAsset asset, out Story story)
+        {
+            story = null;
+            try
+            {
+                story = new Story(asset.text);
+                return true;
+            }
+            catch (KeyNotFoundException)
+            {
+                return false;
+            }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

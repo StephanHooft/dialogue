@@ -9,8 +9,8 @@ namespace StephanHooft.Dialogue.EditorScripts
         #region Fields
 
         private SerializedProperty dialogueAsset;
-        private SerializedProperty dialogueVariables;
-        private SerializedProperty debug;
+        private SerializedProperty variablesAsset;
+        private SerializedProperty debugMode;
         private DialogueManager manager;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,9 +20,9 @@ namespace StephanHooft.Dialogue.EditorScripts
         private void OnEnable()
         {
             dialogueAsset = serializedObject.FindProperty("dialogueAsset");
-            dialogueVariables = serializedObject.FindProperty("dialogueVariablesAsset");
-            debug = serializedObject.FindProperty("debug");
-            manager = (DialogueManager)serializedObject.targetObject;
+            variablesAsset = serializedObject.FindProperty("variablesAsset");
+            debugMode = serializedObject.FindProperty("debugMode");
+            manager = serializedObject.targetObject as DialogueManager;
         }
 
         public override void OnInspectorGUI()
@@ -34,14 +34,15 @@ namespace StephanHooft.Dialogue.EditorScripts
             if (manager.DialogueInProgress)
                 GUI.enabled = false;
             EditorGUILayout.PropertyField(dialogueAsset);
-            EditorGUILayout.PropertyField(dialogueVariables);
+            EditorGUILayout.Separator();
+            EditorGUILayout.PropertyField(variablesAsset);
             GUI.enabled = enabled;
             EditorGUILayout.Separator();
-            EditorGUILayout.PropertyField(debug, new GUIContent("Debug Mode"));
-            DrawSeparator();
+            EditorGUILayout.PropertyField(debugMode);
+            DrawDivider();
             serializedObject.ApplyModifiedProperties();
 
-            if (debug.boolValue && Application.isPlaying)
+            if (Application.isPlaying)
                 DrawEditorTestInterface(manager);
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +93,7 @@ namespace StephanHooft.Dialogue.EditorScripts
                 _ => throw new System.NotImplementedException(),
             };
 
-        private static void DrawSeparator()
+        private static void DrawDivider()
             => EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace StephanHooft.Dialogue.Data
+namespace StephanHooft.Dialogue
 {
     /// <summary>
     /// A serializable dictionary (with <see cref="string"/>s as keys) to store <typeparamref name="T"/>s matching
@@ -45,14 +45,18 @@ namespace StephanHooft.Dialogue.Data
         { get 
             {
                 TagEntry tagEntry;
-                try { tagEntry = dictionary[key]; }
-                catch (KeyNotFoundException e)
-                {
-                    throw Exceptions.KeyNotFound(key, e);
+                try
+                { 
+                    tagEntry = dictionary[key];
+                    if (tagEntry.HasInvalidKey())
+                        Debug.LogError($"The key '{key}' exists, but is invalid. " +
+                            $"Ensure that keys aren't empty, null, or duplicated.");
+                    return tagEntry.Value;
                 }
-                if (tagEntry.HasInvalidKey())
-                    throw Exceptions.InvalidKey(key);
-                return tagEntry.Value;
+                catch (KeyNotFoundException){
+                    Debug.LogError($"No entry with key '{key}' was found.");
+                }
+                return default;
             }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,21 +188,6 @@ namespace StephanHooft.Dialogue.Data
                 builder.Clear();
                 return output;
             }
-        }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        #endregion
-        #region Exceptions
-
-        private static class Exceptions
-        {
-            public static System.ArgumentException InvalidKey(string key)
-                => new($"The key '{key}' exists in the {TypeName}, but is invalid. " +
-                    $"Ensure that keys aren't empty, null, or duplicated.");
-            public static KeyNotFoundException KeyNotFound(string key, System.Exception e)
-                => new($"No entry with key '{key}' was found in the {TypeName}.", e);
-
-            private static string TypeName
-                => typeof(TagMapperDictionary<T>).Name;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

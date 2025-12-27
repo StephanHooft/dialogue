@@ -16,31 +16,32 @@ namespace StephanHooft.Dialogue.EditorScripts
             var startingKnot = property.FindPropertyRelative("startingKnot");
             var startingStitch = property.FindPropertyRelative("startingStitch");
 
+            var bufferedValue = asset.objectReferenceValue as TextAsset;
+            var bufferedKnot = startingKnot.stringValue;
+            var bufferedStitch = startingStitch.stringValue;
             label = EditorGUI.BeginProperty(position, label, property);
-            var bufferedAssetValue = (TextAsset)asset.objectReferenceValue;
             EditorGUI.ObjectField(position, asset, label);
-            var newAssetValue = (TextAsset)asset.objectReferenceValue;
-            if (bufferedAssetValue != newAssetValue)
+            var newValue = asset.objectReferenceValue as TextAsset;
+
+            if (bufferedValue != newValue)
             {
                 startingKnot.stringValue = "";
                 startingStitch.stringValue = "";
             }
-            if (newAssetValue != null)
+            if (newValue != null)
             {
                 EditorGUI.indentLevel++;
-                try
+                if (newValue.IsValidInkStory(out var story))
                 {
-                    var story = new Story(newAssetValue.text);
                     startingKnot.stringValue = DrawKnotProperty("Starting Knot", startingKnot.stringValue, story);
                     startingStitch.stringValue = DrawStitchProperty("Starting Stitch", startingStitch.stringValue, startingKnot.stringValue, story);
                 }
-                catch (System.Collections.Generic.KeyNotFoundException)
+                else
                 {
-                    Debug.LogError("The selected asset is not a valid Ink story.");
-                    asset.objectReferenceValue = bufferedAssetValue;
-                    startingKnot.stringValue = "";
-                    startingStitch.stringValue = "";
-                    return;
+                    Debug.LogError($"{newValue.name} doet not contain valid Ink JSON.");
+                    asset.objectReferenceValue = bufferedValue;
+                    startingKnot.stringValue = bufferedKnot;
+                    startingStitch.stringValue = bufferedStitch;
                 }
                 EditorGUI.indentLevel--;
             }
