@@ -62,7 +62,8 @@ namespace StephanHooft.Dialogue.EditorScripts
                 if (knotValue == knot)
                     selected = i + 1;
             }
-            var selectedKnotIndex = EditorGUILayout.Popup(label, selected, knotOptions);
+            var tooltipLabel = new GUIContent(label, "Determines which knot the dialogue asset should start from.");
+            var selectedKnotIndex = EditorGUILayout.Popup(tooltipLabel, selected, knotOptions);
             return selectedKnotIndex > 0 ? knotOptions[selectedKnotIndex] : "";
         }
 
@@ -80,7 +81,9 @@ namespace StephanHooft.Dialogue.EditorScripts
                 if (stitchValue == stitch)
                     selected = i + 1;
             }
-            var selectedStitchIndex = EditorGUILayout.Popup(label, selected, stitchOptions);
+            var tooltipLabel = new GUIContent
+                (label, "Determines which stitch (within the selected knot) the dialogue asset should start from.");
+            var selectedStitchIndex = EditorGUILayout.Popup(tooltipLabel, selected, stitchOptions);
             return selectedStitchIndex > 0 ? stitchOptions[selectedStitchIndex] : "";
         }
 

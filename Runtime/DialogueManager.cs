@@ -78,9 +78,17 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField] private DialogueAsset dialogueAsset;
-        [SerializeField] private VariablesTracker variablesAsset;
-        [SerializeField] private DebugMode debugMode = DebugMode.None;
+        [SerializeField]
+        [Tooltip("A TextAsset that contains an Ink story compiled to JSON.")]
+        private DialogueAsset dialogueAsset;
+
+        [SerializeField]
+        [Tooltip("Optional: Set a reference to a VariablesTracker to allow variables to persist.")]
+        private VariablesTracker variablesAsset;
+
+        [SerializeField]
+        [Tooltip("Limits the number of debug log messages printed.")]
+        private DebugMode debugMode = DebugMode.None;
 
         private Story story;
 

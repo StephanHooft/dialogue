@@ -41,9 +41,14 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField] private TextAsset asset;
-        [SerializeField] private string startingKnot;
-        [SerializeField] private string startingStitch;
+        [SerializeField]
+        private TextAsset asset;
+
+        [SerializeField] 
+        private string startingKnot;
+
+        [SerializeField]
+        private string startingStitch;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

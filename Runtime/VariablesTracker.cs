@@ -77,10 +77,20 @@ namespace StephanHooft.Dialogue
         #endregion
         #region Fields
 
-        [SerializeField] private TextAsset variablesAsset;
-        [SerializeField] private DebugMode debugMode = DebugMode.None;
+        [SerializeField]
+        [Tooltip("A TextAsset that contains an Ink story compiled to JSON.\n" +
+            "Make sure this asset includes all variables you want to track.")]
+        private TextAsset variablesAsset;
+
+        [SerializeField]
+        [Tooltip("Enable to make the VariablesTracker also store variables internally whenever they are saved.\n" +
+            "When disabled, the VariableTracker's internal variable storage is cleared.")]
+        private bool storeSavedDataInTracker;
+
+        [SerializeField]
+        [Tooltip("Limits the number of debug log messages printed.")]
+        private DebugMode debugMode = DebugMode.None;
         [SerializeField] private string saveData = null;
-        [SerializeField] private bool storeSavedDataInTracker;
 
         private Dictionary<string, Value> variables = null;
         private DialogueManager trackedManager;
