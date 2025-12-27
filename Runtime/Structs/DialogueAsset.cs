@@ -5,7 +5,7 @@ namespace StephanHooft.Dialogue
 {
     /// <summary>
     /// A struct to encapsulate a (reference to) a <see cref="TextAsset"/> and a <see cref="string"/> starting node.
-    /// Used to source Ink-based dialogues by a <see cref="DialogueManager"/>.
+    /// Used to source Ink-based dialogues to a <see cref="DialogueManager"/>.
     /// </summary>
     [Serializable]
     public struct DialogueAsset
