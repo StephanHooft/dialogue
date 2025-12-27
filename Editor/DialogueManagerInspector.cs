@@ -34,7 +34,6 @@ namespace StephanHooft.Dialogue.EditorScripts
             if (manager.DialogueInProgress)
                 GUI.enabled = false;
             EditorGUILayout.PropertyField(dialogueAsset);
-            EditorGUILayout.Separator();
             EditorGUILayout.PropertyField(variablesAsset);
             GUI.enabled = enabled;
             EditorGUILayout.Separator();
