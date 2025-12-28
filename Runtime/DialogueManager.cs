@@ -54,7 +54,8 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// True if the <see cref="DialogueManager"/> is currently running a dialogue.
         /// </summary>
-        public bool DialogueInProgress { get; private set; }
+        public bool DialogueInProgress
+            => story != null;
 
         /// <summary>
         /// The <see cref="DialogueManager"/>'s current <see cref="string"/> starting knot, if any.
@@ -106,6 +107,319 @@ namespace StephanHooft.Dialogue
         #region Methods
 
         /// <summary>
+        /// Advance the current dialogue. Pass no parameters if continuing normally. 
+        /// Pass a choice index if a choice is required for the dialogue to continue.
+        /// </summary>
+        public void AdvanceDialogue()
+        {
+            if (CanContinueDialogue)
+                ProcessNextDialogueLine();
+        }
+
+        /// <summary>
+        /// Advance the current dialogue. Pass no parameters if continuing normally.
+        /// Pass a choice index if a choice is required for the dialogue to continue.
+        /// </summary>
+        /// <param name="choiceIndex">The <see cref="int"/> index of the choice to select.</param>
+        public void AdvanceDialogue(int choiceIndex)
+        {
+            var count = CurrentDialogueLine.choices.Length;
+            if (!DialogueInProgress || !CurrentDialogueLine.cue.Choice())
+                return;
+            if (choiceIndex >= count || choiceIndex < 0)
+                throw new System.IndexOutOfRangeException
+                    ($"Choice with index {choiceIndex} is invalid. Only {count} choices are available.");
+            OnChoice?.Invoke(this, choiceIndex);
+            if (debugMode.Full())
+                Debug.Log($"{this.name} || Selected dialogue choice {choiceIndex}:" +
+                    $" {CurrentDialogueLine.choices[choiceIndex].text}.");
+            story.ChooseChoiceIndex(choiceIndex);
+            ProcessNextDialogueLine();
+        }
+
+        /// <summary>
+        /// Bind a C# Action to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="act">The C# Action to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction(string functionName, System.Action act, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, act, lookaheadSafe);
+            else 
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Action to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="act">The C# Action to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T>
+            (string functionName, System.Action<T> act, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, act, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Action to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="act">The C# Action to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2>
+            (string functionName, System.Action<T1, T2> act, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, act, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Action to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="act">The C# Action to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2, T3>
+            (string functionName, System.Action<T1, T2, T3> act, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, act, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Action to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="act">The C# Action to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2, T3, T4>
+            (string functionName, System.Action<T1, T2, T3, T4> act, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, act, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Function to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="func">The C# Function to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction
+            (string functionName, System.Func<object> func, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, func, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Function to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="func">The C# Function to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T>
+            (string functionName, System.Func<T, object> func, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, func, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Function to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="func">The C# Function to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2>
+            (string functionName, System.Func<T1, T2, object> func, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, func, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Function to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="func">The C# Function to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2, T3>
+            (string functionName, System.Func<T1, T2, T3, object> func, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, func, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Bind a C# Function to an Ink EXTERNAL function declaration within a dialogue in progress.
+        /// </summary>
+        /// <param name="functionName">EXTERNAL Ink <see cref="string"/> function name to bind to.</param>
+        /// <param name="func">The C# Function to bind.</param>
+        /// <param name="lookaheadSafe">Pass <see cref="false"/> if Ink shouldn't evaluate beyond the function.
+        /// Passing <see cref="true"/> risks the function being called repeatedly or too early.</param>
+        public void BindExternalFunction<T1, T2, T3, T4>
+            (string functionName, System.Func<T1, T2, T3, T4, object> func, bool lookaheadSafe = false)
+        {
+            if (DialogueInProgress)
+                story.BindExternalFunction(functionName, func, lookaheadSafe);
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot bind functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Remove a binding for a named EXTERNAL Ink function in an ongoing dialogue.
+        /// </summary>
+        /// <param name="functionName">The name of the EXTERNAL Ink function to unbind.</param>
+        public void UnbindExternalFunction(string functionName)
+        {
+            if (DialogueInProgress)
+                story.UnbindExternalFunction(functionName);
+        }
+
+        /// <summary>
+        /// Evaluates a function defined in Ink for a dialogue in progress, 
+        /// and gathers the possibly multi-line text as generated by the function.
+        /// </summary>
+        /// <param name="functionName">
+        /// The <see cref="string"/> name of the function as declared in Ink.</param>
+        /// <param name="textOutput">
+        /// The <see cref="spring"/> text content produced by the function via normal Ink, if any.</param>
+        /// <param name="arguments">The arguments that the ink function takes, if any.
+        /// There is no validation on the number of arguments, so take care to correctly specify these.</param>
+        /// <returns>
+        /// The return value as returned from the Ink function with `~ return myValue`, or null if nothing is returned.
+        /// </returns>
+        public object EvaluateFunction(string functionName, out string textOutput, params object[] arguments)
+        {
+            if (DialogueInProgress)
+                return story.EvaluateFunction(functionName, out textOutput, arguments);
+            else 
+                throw new System.InvalidOperationException
+                    ($"Cannot evaluate functions while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Value"/> of a dialogue variable for a dialogue in progress.
+        /// <para>This method will throw a <see cref="System.InvalidOperationException"/> if called while the
+        /// <see cref="DialogueManager"/> is not currently processing a dialogue.</para>
+        /// </summary>
+        /// <param name="variableName">The <see cref="string"/> name of the variable to get.</param>
+        /// <returns>The <see cref="Value"/> of the specified variable.</returns>
+        public Value GetVariable(string variableName)
+        {
+            if (DialogueInProgress)
+            {
+                if (story.variablesState.GlobalVariableExistsWithName(variableName))
+                    return story.variablesState.GetVariableWithName(variableName) as Value;
+                else 
+                    throw new System.Collections.Generic.KeyNotFoundException
+                        ($"No dialogue variable with name {variableName} was found.");
+            }
+            else
+                throw new System.InvalidOperationException
+                    ($"Cannot get dialogue variables while no dialogue is in progress.");
+        }
+
+        /// <summary>
+        /// Returns <see cref="true"/> if a dialogue in progress has a global variable with specified name.
+        /// </summary>
+        /// <param name="variableName">The <see cref="string"/> name of the variable to check for.</param>
+        /// <returns>
+        /// <see cref="true"/> if a dialogue with a variable of name <paramref name="variableName"/> is in progress.
+        /// </returns>
+        public bool HasVariableWithName(string variableName)
+            => DialogueInProgress && story.variablesState.GlobalVariableExistsWithName(variableName);
+
+        /// <summary>
+        /// Tells <see cref="DialogueManager"/> to jump a dialogue in progeress to a specified knot
+        /// (and optional stitch) position.
+        /// <para>
+        /// This method only works while a dialogue is in progress.
+        /// </para>
+        /// </summary>
+        /// <param name="knot"><see cref="string"/> name of the knot to jump to.</param>
+        /// <param name="stitch">Optional <see cref="string"/> name of the stitch to jump to.</param>
+        public void JumpTo(string knot, string stitch = null)
+        {
+            if (!DialogueInProgress)
+                return;
+            if (!story.ContainsKnot(knot))
+                throw new System.ArgumentException
+                    ($"Knot address \"{knot}\" does not exist in the story.");
+            if (stitch == null || stitch == "")
+                story.ChoosePathString(knot);
+            else
+            {
+                if (!story.ContainsKnot(knot, stitch))
+                    throw new System.ArgumentException
+                        ($"Knot + Stitch address \"{knot}.{stitch}\" does not exist in the story.");
+                story.ChoosePathString($"{knot}.{stitch}");
+            }
+        }
+
+        /// <summary>
+        /// Sets the <see cref="Value"/> of a dialogue variable for a dialogue in progress.
+        /// <para>This method will throw a <see cref="System.InvalidOperationException"/> if called while the
+        /// <see cref="DialogueManager"/> is not currently processing a dialogue.</para>
+        /// </summary>
+        /// <param name="variableName">The <see cref="string"/> name of the variable to set.</param>
+        /// <param name="value">The <see cref="Value"/> to set to the variable.</param>
+        public void SetVariable(string variableName, Value value)
+        {
+            if (DialogueInProgress)
+            {
+                if (story.variablesState.GlobalVariableExistsWithName(variableName))
+                    story.variablesState.SetGlobal(variableName, value);
+                else 
+                    throw new System.Collections.Generic.KeyNotFoundException
+                        ($"No dialogue variable with name {variableName} was found.");
+            }
+            else 
+                throw new System.InvalidOperationException
+                    ($"Cannot set dialogue variables while no dialogue is in progress.");
+        }
+
+        /// <summary>
         /// Begin a dialogue.
         /// </summary>
         /// <param name="startingKnot">The <see cref="string"/>
@@ -117,7 +431,7 @@ namespace StephanHooft.Dialogue
         /// </param>
         public void StartDialogue(string startingKnot = null, string startingStitch = null)
         {
-            if(dialogueAsset.Text == null)
+            if (dialogueAsset.Text == null)
                 throw new System.ArgumentNullException("dialogueAsset.Text");
             if (DialogueInProgress)
                 StopCurrentStory();
@@ -136,7 +450,7 @@ namespace StephanHooft.Dialogue
         /// </param>
         public void StartDialogue(DialogueAsset dialogue, string startingKnot = null, string startingStitch = null)
         {
-            if(dialogue.Text == null)
+            if (dialogue.Text == null)
                 throw new System.ArgumentNullException("DialogueAsset.Text");
             if (DialogueInProgress)
                 StopCurrentStory();
@@ -152,75 +466,6 @@ namespace StephanHooft.Dialogue
             if (!DialogueInProgress)
                 return;
             StopCurrentStory();
-        }
-
-        /// <summary>
-        /// Advance the current dialogue. Pass no parameters if continuing normally. 
-        /// Pass a choice index if a choice is required for the dialogue to continue.
-        /// </summary>
-        public void AdvanceDialogue()
-        {
-            if (DialogueInProgress && CanContinueDialogue)
-                ProcessNextDialogueLine();
-        }
-
-        /// <summary>
-        /// Advance the current dialogue. Pass no parameters if continuing normally.
-        /// Pass a choice index if a choice is required for the dialogue to continue.
-        /// </summary>
-        /// <param name="choiceIndex">The <see cref="int"/> index of the choice to select.</param>
-        public void AdvanceDialogue(int choiceIndex)
-        {
-            var count = CurrentDialogueLine.choices.Length;
-            if (!DialogueInProgress || CurrentDialogueLine.cue != DialogueCue.Choice)
-                return;
-            if (choiceIndex >= count || choiceIndex < 0)
-                throw new System.IndexOutOfRangeException
-                    ($"Choice with index {choiceIndex} is invalid. Only {count} choices are available.");
-            OnChoice?.Invoke(this, choiceIndex);
-            if (debugMode.Full())
-                Debug.Log($"{this.name} || Selected dialogue choice {choiceIndex}:" +
-                    $" {CurrentDialogueLine.choices[choiceIndex].text}.");
-            story.ChooseChoiceIndex(choiceIndex);
-            ProcessNextDialogueLine();
-        }
-
-        /// <summary>
-        /// Gets the <see cref="Value"/> of a dialogue variable for a dialogue in progress.
-        /// <para>This method will throw a <see cref="System.InvalidOperationException"/> if called while the
-        /// <see cref="DialogueManager"/> is not currently processing a dialogue.</para>
-        /// </summary>
-        /// <param name="variableName">The <see cref="string"/> name of the variable to get.</param>
-        /// <returns>The <see cref="Value"/> of the specified variable.</returns>
-        public Value GetVariable(string variableName)
-        {
-            if (DialogueInProgress)
-            {
-                if (story.variablesState.GlobalVariableExistsWithName(variableName))
-                    return story.variablesState.GetVariableWithName(variableName) as Value;
-                else throw new System.Collections.Generic.KeyNotFoundException
-                        ($"No dialogue variable with name {variableName} was found.");
-            }
-            throw new System.InvalidOperationException
-                ($"Cannot get dialogue variables when no dialogue is in progress.");
-        }
-
-        private void JumpToKnot(string knot, string stitch)
-        {
-            if (knot == null || knot == "")
-                return;
-            if (!story.ContainsKnot(knot))
-                throw new System.ArgumentException
-                    ($"Knot address '{knot}' does not exist in the story.");
-            if (stitch == null || stitch == "")
-                story.ChoosePathString(knot);
-            else
-            {
-                if (!story.ContainsKnot(knot, stitch))
-                    throw new System.ArgumentException
-                        ($"Knot + Stitch address '{knot}.{stitch}' does not exist in the story.");
-                story.ChoosePathString($"{knot}.{stitch}");
-            }
         }
 
         private void ProcessNextDialogueLine()
@@ -242,15 +487,17 @@ namespace StephanHooft.Dialogue
         private void StartNewStory(string startingKnot, string startingStitch)
         {
             story = CreateNewStory(dialogueAsset.Text);
-            JumpToKnot(startingKnot, startingStitch);
+            if(startingKnot != null && startingKnot != "")
+                JumpTo(startingKnot, startingStitch);
             StartTrackingVariables(variablesAsset, this, story, debugMode.Full());
             story.variablesState.variableChangedEvent += VariableChanged;
             OnDialogueStart?.Invoke(this);
-            var globalTags = story.GetGlobalTags();
             if (debugMode.Full())
+            {
+                var globalTags = story.GetGlobalTags();
                 Debug.Log($"{name} | Starting dialogue: {dialogueAsset.Name}\n" +
                     $"{(globalTags.Length > 0 ? $"Global Tags ({globalTags.Length}): [{string.Join("; ", globalTags)}]" : "")}");
-            DialogueInProgress = true;
+            }
             ProcessNextDialogueLine();
         }
 
@@ -264,7 +511,6 @@ namespace StephanHooft.Dialogue
             OnDialogueEnd?.Invoke(this);
             if (debugMode.Full())
                 Debug.Log($"{name} | Stopping dialogue: {dialogueAsset.Name}.\n");
-            DialogueInProgress = false;
         }
 
         private void VariableChanged(string name, Ink.Runtime.Object value)
