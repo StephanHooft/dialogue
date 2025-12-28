@@ -3,7 +3,7 @@
   "version": "2.0.1",
   "displayName": "Dialogue",
   "description": "A Unity package for an ink-based dialogue framework.",
-  "unity": "6000.3",
+  "unity": "2021.3",
   "dependencies": {
     "com.inkle.ink-unity-integration": "https://github.com/inkle/ink-unity-integration.git#upm"
   },
