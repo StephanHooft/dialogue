@@ -14,14 +14,19 @@ namespace StephanHooft.Dialogue
         public readonly string text;
 
         /// <summary>
-        /// The <see cref="DialogueLine"/>'s <see cref="DialogueTag"/>s, if any.
+        /// The <see cref="DialogueLine"/>'s <see cref="string"/> tags, if any.
         /// </summary>
-        public readonly DialogueTag[] tags;
+        public readonly string[] tags;
 
         /// <summary>
         /// The <see cref="DialogueLine"/>'s <see cref="DialogueChoice"/>s, if any.
         /// </summary>
         public readonly DialogueChoice[] choices;
+
+        /// <summary>
+        /// Die <see cref="DialogueLine"/>'s <see cref="DialogueCue"/>.
+        /// </summary>
+        public readonly DialogueCue cue;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -31,19 +36,32 @@ namespace StephanHooft.Dialogue
         /// Create a new <see cref="DialogueLine"/>
         /// </summary>
         /// <param name="text">
-        /// The line's <see cref="string"/> text.
+        /// The <see cref="DialogueLine"/>'s <see cref="string"/> text.
         /// </param>
         /// <param name="tags">
-        /// <see cref="DialogueTag"/>s, if any.
+        /// <see cref="string"/>s tags, if any.
         /// </param>
         /// <param name="choices">
         /// <see cref="DialogueChoice"/>s, if any.
         /// </param>
-        public DialogueLine(string text, DialogueTag[] tags, DialogueChoice[] choices)
+        /// <param name="cue">
+        /// The <see cref="DialogueLine"/>'s <see cref="DialogueCue"/>.
+        /// </param>
+        public DialogueLine(string text, string[] tags, DialogueChoice[] choices, DialogueCue cue)
         {
             this.text = text;
             this.tags = tags;
             this.choices = choices;
+            this.cue = cue;
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #endregion
+        #region methods
+
+        public override string ToString()
+        {
+            return $"DialogueLine: {text}Cue: {cue}" +
+                $"{(tags.Length > 0 ? $" || Line tags ({tags.Length}): [{string.Join("; ", tags)}]" : "")}";
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

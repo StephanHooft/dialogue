@@ -1,9 +1,9 @@
 {
   "name": "com.stephanhooft.dialogue",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "displayName": "Dialogue",
   "description": "A Unity package for an ink-based dialogue framework.",
-  "unity": "2021.3",
+  "unity": "6000.3",
   "dependencies": {
     "com.inkle.ink-unity-integration": "https://github.com/inkle/ink-unity-integration.git#upm"
   },
