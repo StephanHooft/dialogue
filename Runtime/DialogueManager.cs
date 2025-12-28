@@ -41,10 +41,16 @@ namespace StephanHooft.Dialogue
         #region Properties
 
         /// <summary>
-        /// Whether the dialogue can be advanced. (Only applicable if a dialogue is in progress.)
+        /// <see cref="true"/> if a dialogue in progress can be advanced.
         /// </summary>
         public bool CanContinueDialogue
             => DialogueInProgress && story.canContinue;
+
+        /// <summary>
+        /// <see cref="true"/> if a choice is required before dialogue can continue.
+        /// </summary>
+        public bool ChoiceRequired
+            => DialogueInProgress && CurrentDialogueLine.cue.Choice();
 
         /// <summary>
         /// The most recent <see cref="DialogueLine"/> processed by the <see cref="DialogueManager"/>.
