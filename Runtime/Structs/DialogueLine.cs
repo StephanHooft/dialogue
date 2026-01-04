@@ -14,9 +14,9 @@ namespace StephanHooft.Dialogue
         public readonly string text;
 
         /// <summary>
-        /// The <see cref="DialogueLine"/>'s <see cref="string"/> tags, if any.
+        /// The <see cref="DialogueLine"/>'s <see cref="DialogueTag"/>s, if any.
         /// </summary>
-        public readonly string[] tags;
+        public readonly DialogueTag[] tags;
 
         /// <summary>
         /// The <see cref="DialogueLine"/>'s <see cref="DialogueChoice"/>s, if any.
@@ -50,7 +50,9 @@ namespace StephanHooft.Dialogue
         public DialogueLine(string text, string[] tags, DialogueChoice[] choices, DialogueCue cue)
         {
             this.text = text;
-            this.tags = tags;
+            this.tags = new DialogueTag[tags.Length];
+            for(int i = 0; i < tags.Length; i++)
+                this.tags[i] = new(tags[i]);
             this.choices = choices;
             this.cue = cue;
         }
@@ -61,7 +63,7 @@ namespace StephanHooft.Dialogue
         public override string ToString()
         {
             return $"DialogueLine: {text}Cue: {cue}" +
-                $"{(tags.Length > 0 ? $" || Line tags ({tags.Length}): [{string.Join("; ", tags)}]" : "")}";
+                $"{(tags.Length > 0 ? $" || Line tags ({tags.Length}): [{string.Join("];[", tags)}]" : "")}";
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

@@ -22,7 +22,7 @@ namespace StephanHooft.Dialogue
         /// <summary>
         /// The "choice tags" associated with the <see cref="DialogueChoice"/>, if any.
         /// </summary>
-        public readonly string[] tags;
+        public readonly DialogueTag[] tags;
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -44,7 +44,9 @@ namespace StephanHooft.Dialogue
         {
             this.index = index;
             this.text = text;
-            this.tags = tags;
+            this.tags = new DialogueTag[tags.Length];
+            for (int i = 0; i < tags.Length; i++)
+                this.tags[i] = new(tags[i]);
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
@@ -52,7 +54,7 @@ namespace StephanHooft.Dialogue
         public override string ToString()
         {
             return $"DialogueChoice {index}: {text}" +
-                $"\n{(tags.Length > 0 ? $"Choice tags ({tags.Length}): {string.Join("; ", tags)}" : "")}";
+                $"\n{(tags.Length > 0 ? $"Choice tags ({tags.Length}): [{string.Join("];[", tags)}]" : "")}";
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion

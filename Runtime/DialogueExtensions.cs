@@ -185,6 +185,42 @@ namespace StephanHooft.Dialogue
                 return false;
             }
         }
+
+        /// <summary>
+        /// Checks whether a <see cref="string"/> contains the specified character, and splits it when it does.
+        /// </summary>
+        /// <param name="value">The <see cref="char"/> to check against.</param>
+        /// <param name="split">Will output a split <see cref="string"/> if the source string contains the specified
+        /// <paramref name="value"/>. Will otherwise output null.</param>
+        /// <returns><see cref="true"/> if the <see cref="string"/> contains <paramref name="value"/> and has been split.</returns>
+        public static bool SplitIfContains(this string s, char value, out string[] split)
+        {
+            if (s.Contains(value))
+            {
+                split = s.Split(value);
+                return true;
+            }
+            split = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="string"/> contains the specified characters, and splits it when it does.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to check against.</param>
+        /// <param name="split">Will output a split <see cref="string"/> if the source string contains the specified
+        /// <paramref name="value"/>. Will otherwise output null.</param>
+        /// <returns><see cref="true"/> if the <see cref="string"/> contains <paramref name="value"/>.</returns>
+        public static bool SplitIfContains(this string s, string value, out string[] split)
+        {
+            if (s.Contains(value))
+            {
+                split = s.Split(value);
+                return true;
+            }
+            split = null;
+            return false;
+        }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         #endregion
     }
