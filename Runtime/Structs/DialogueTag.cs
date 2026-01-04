@@ -11,6 +11,12 @@ namespace StephanHooft.Dialogue
     public readonly struct DialogueTag
     {
         /// <summary>
+        /// Returns the number of parameters held by the <see cref="DialogueTag"/>.
+        /// </summary>
+        public int ParameterCount
+            => parameters == null ? 0 : parameters.Length;
+
+        /// <summary>
         /// The <see cref="DialogueTag"/>'s label, without scope and/or parameters.
         /// <para>
         /// If not scoped and without parameters, equal to the <see cref="string"/> value used to create the tag.
